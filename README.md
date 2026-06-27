@@ -124,3 +124,5 @@ docs/evidence/	每日过程性证据模板
 License
 
 本仓库仅用于《校园轻集市》课程教学与实践。
+git config --global user.name "akari1573"
+git config --global user.email "3427911451@qq.com"
