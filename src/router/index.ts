@@ -6,22 +6,28 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/home',
-    },
-    {
-      path: '/home',
       name: 'Home',
       component: HomeView,
     },
     {
-      path: '/list',
-      name: 'List',
-      component: () => import('../views/ListView.vue'),
+      path: '/trade',
+      name: 'Trade',
+      component: () => import('../views/TradeView.vue'),
     },
     {
-      path: '/detail/:id',
-      name: 'Detail',
-      component: () => import('../views/DetailView.vue'),
+      path: '/lost-found',
+      name: 'LostFound',
+      component: () => import('../views/LostFoundView.vue'),
+    },
+    {
+      path: '/group-buy',
+      name: 'GroupBuy',
+      component: () => import('../views/GroupBuyView.vue'),
+    },
+    {
+      path: '/errand',
+      name: 'Errand',
+      component: () => import('../views/ErrandView.vue'),
     },
     {
       path: '/publish',
@@ -32,6 +38,21 @@ const router = createRouter({
       path: '/message',
       name: 'Message',
       component: () => import('../views/MessageView.vue'),
+    },
+    {
+      path: '/user',
+      name: 'UserCenter',
+      component: () => import('../views/UserCenterView.vue'),
+    },
+    {
+      path: '/list',
+      name: 'List',
+      component: () => import('../views/ListView.vue'),
+    },
+    {
+      path: '/detail/:id',
+      name: 'Detail',
+      component: () => import('../views/DetailView.vue'),
     },
     {
       path: '/profile',
