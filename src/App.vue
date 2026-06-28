@@ -1,17 +1,29 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const activeIndex = computed(() => route.path)
+</script>
 
 <template>
   <div class="app">
     <header class="header">
       <h1 class="logo">校园轻集市</h1>
-      <nav class="nav">
-        <router-link class="nav-item" to="/home">首页</router-link>
-        <router-link class="nav-item" to="/list">列表</router-link>
-        <router-link class="nav-item" to="/publish">发布</router-link>
-        <router-link class="nav-item" to="/message">消息</router-link>
-        <router-link class="nav-item" to="/profile">我的</router-link>
-        <router-link class="nav-item" to="/board">看板</router-link>
-      </nav>
+      <el-menu
+        :default-active="activeIndex"
+        mode="horizontal"
+        :ellipsis="false"
+        router
+        class="nav-menu"
+      >
+        <el-menu-item index="/home">首页</el-menu-item>
+        <el-menu-item index="/list">列表</el-menu-item>
+        <el-menu-item index="/publish">发布</el-menu-item>
+        <el-menu-item index="/message">消息</el-menu-item>
+        <el-menu-item index="/profile">我的</el-menu-item>
+        <el-menu-item index="/board">看板</el-menu-item>
+      </el-menu>
     </header>
     <main class="main">
       <RouterView />
@@ -28,7 +40,6 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0 24px;
   height: 60px;
   background: #fff;
@@ -36,37 +47,25 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1px solid #e4e7ed;
 }
 
 .logo {
   font-size: 20px;
   color: #409eff;
   margin: 0;
+  white-space: nowrap;
 }
 
-.nav {
-  display: flex;
-  gap: 8px;
+.nav-menu {
+  flex: 1;
+  justify-content: flex-end;
+  border-bottom: none !important;
 }
 
-.nav-item {
-  padding: 8px 16px;
-  border-radius: 6px;
-  color: #606266;
-  text-decoration: none;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.nav-item:hover {
-  color: #409eff;
-  background: #ecf5ff;
-}
-
-.nav-item.router-link-exact-active {
-  color: #409eff;
-  background: #ecf5ff;
-  font-weight: 600;
+.nav-menu .el-menu-item {
+  height: 60px;
+  line-height: 60px;
 }
 
 .main {
