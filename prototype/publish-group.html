@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园轻集市 - 发布拼单搭子</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; }
+    .top-nav { display:flex; align-items:center; padding:0 24px; height:60px; background:#fff; box-shadow:0 1px 12px rgba(0,0,0,0.04); position:sticky; top:0; z-index:100; border-bottom:1px solid #F1F5F9; }
+    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; }
+    .nav-links { display:flex; gap:4px; }
+    .nav-links a { text-decoration:none; color:#475569; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color:#3B82F6; background:#EFF6FF; }
+    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:16px; }
+    .container { max-width:1100px; margin:0 auto; padding:24px; }
+    .breadcrumb { margin-bottom:20px; font-size:13px; color:#64748B; }
+    .breadcrumb a { color:#3B82F6; text-decoration:none; }
+    .publish-grid { display:grid; grid-template-columns:1fr 300px; gap:24px; }
+    .form-card { background:#fff; border-radius:16px; padding:32px; box-shadow:0 1px 8px rgba(0,0,0,0.04); }
+    .form-title { font-size:22px; font-weight:700; margin-bottom:28px; padding-bottom:16px; border-bottom:2px solid #F1F5F9; }
+    .form-group { margin-bottom:20px; }
+    .form-label { display:block; font-size:14px; font-weight:600; color:#1E293B; margin-bottom:6px; }
+    .form-label .required { color:#EF4444; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .side-card { background:#fff; border-radius:14px; padding:20px; box-shadow:0 1px 8px rgba(0,0,0,0.04); margin-bottom:16px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="top-nav">
+      <div class="nav-logo">🏫 校园轻集市</div>
+      <div class="nav-links">
+        <a href="home.html">首页</a>
+        <a href="category.html">分类浏览</a>
+        <a href="publish.html" class="active">发布信息</a>
+        <a href="messages.html">消息</a>
+        <a href="profile.html">个人中心</a>
+      </div>
+      <div class="nav-actions">
+        <el-button size="small" type="primary" onclick="location.href='login.html'">登录</el-button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="home.html">首页</a><span>/</span><a href="publish.html">发布信息</a><span>/</span><span style="color:#1E293B;">发布拼单搭子</span>
+      </div>
+
+      <div class="publish-grid">
+        <div class="form-card">
+          <div class="form-title">🤝 发布拼单搭子</div>
+
+          <div class="form-group">
+            <label class="form-label">拼单类型 <span class="required">*</span></label>
+            <el-select v-model="form.type" placeholder="请选择拼单类型" style="width:100%;">
+              <el-option label="🛒 拼单购物（一起买更便宜）" value="shopping"></el-option>
+              <el-option label="🍜 拼饭搭子（约饭聚餐）" value="meal"></el-option>
+              <el-option label="🏀 运动搭子（约球约跑约健身）" value="sports"></el-option>
+              <el-option label="📚 学习搭子（组队自习）" value="study"></el-option>
+              <el-option label="🚗 拼车出行（拼车去某地）" value="carpool"></el-option>
+              <el-option label="🎮 娱乐搭子（游戏/桌游/K歌）" value="entertainment"></el-option>
+              <el-option label="其他" value="other"></el-option>
+            </el-select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">拼单主题 <span class="required">*</span></label>
+            <el-input v-model="form.title" placeholder="例如：东区食堂三楼霸王茶姬拼奶茶" maxlength="60"></el-input>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">需要人数 <span class="required">*</span></label>
+              <el-input-number v-model="form.total" :min="2" :max="100" style="width:100%;"></el-input-number>
+            </div>
+            <div class="form-group">
+              <label class="form-label">人均费用</label>
+              <el-input v-model="form.price" placeholder="例如：18 元（选填）">
+                <template #append>元</template>
+              </el-input>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">截止时间 <span class="required">*</span></label>
+              <el-date-picker v-model="form.deadline" type="datetime" placeholder="选择截止时间" style="width:100%;"></el-date-picker>
+            </div>
+            <div class="form-group">
+              <label class="form-label">集合地点 <span class="required">*</span></label>
+              <el-input v-model="form.location" placeholder="例如：东区食堂三楼"></el-input>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">拼单详情 <span class="required">*</span></label>
+            <el-input v-model="form.desc" type="textarea" :rows="5" placeholder="详细描述拼单内容、优惠信息、活动安排、注意事项等..." maxlength="500" show-word-limit></el-input>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">联系方式 <span class="required">*</span></label>
+            <el-input v-model="form.contact" placeholder="手机号 / QQ / 微信，方便参与者联系你"></el-input>
+          </div>
+
+          <div style="display:flex;gap:12px;padding-top:8px;">
+            <el-button type="success" size="large" style="width:180px;" @click="submitForm">🤝 发起拼单</el-button>
+            <el-button size="large" style="width:120px;">💾 保存草稿</el-button>
+            <div style="flex:1;"></div>
+            <el-button size="large" onclick="location.href='publish.html'">取消</el-button>
+          </div>
+        </div>
+
+        <div>
+          <div class="side-card">
+            <h3>📋 发布须知</h3>
+            <div style="font-size:13px;color:#475569;line-height:1.8;">
+              · 请明确拼单类型和活动内容<br>
+              · 设置合理的人数和截止时间<br>
+              · 明确费用分摊方式<br>
+              · 确保集合地点清晰可找<br>
+              · 拼单成功后请及时更新状态
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, reactive } = Vue
+    const app = createApp({
+      setup() {
+        const form = reactive({ type:'', title:'', total:5, price:'', deadline:'', location:'', desc:'', contact:'' })
+        function submitForm() {
+          if (!form.title.trim()) { ElementPlus.ElMessage.warning('请填写拼单主题'); return }
+          if (!form.type) { ElementPlus.ElMessage.warning('请选择拼单类型'); return }
+          ElementPlus.ElMessage.success('🎉 拼单发布成功！')
+          setTimeout(() => location.href='home.html', 1500)
+        }
+        return { form, submitForm }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+</script>
+</body>
+</html>

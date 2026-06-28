@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园轻集市 - 失物招领详情</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; }
+    .top-nav { display:flex; align-items:center; padding:0 24px; height:60px; background:#fff; box-shadow:0 1px 12px rgba(0,0,0,0.04); position:sticky; top:0; z-index:100; border-bottom:1px solid #F1F5F9; }
+    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; }
+    .nav-links { display:flex; gap:4px; }
+    .nav-links a { text-decoration:none; color:#475569; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color:#3B82F6; background:#EFF6FF; }
+    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:16px; }
+    .container { max-width:1200px; margin:0 auto; padding:24px; }
+    .breadcrumb { margin-bottom:20px; font-size:13px; color:#64748B; }
+    .breadcrumb a { color:#3B82F6; text-decoration:none; }
+    .detail-grid { display:grid; grid-template-columns:1fr 360px; gap:24px; }
+    .main-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); }
+    .img-section { height:360px; background:#E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .img-section img { width:100%; height:100%; object-fit:cover; }
+    .main-body { padding:24px; }
+    .detail-title { font-size:24px; font-weight:700; color:#1E293B; margin-bottom:12px; }
+    .detail-tags { display:flex; gap:8px; margin-bottom:16px; }
+    .detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; padding:16px; background:#F8FAFC; border-radius:10px; }
+    .meta-item { font-size:13px; }
+    .meta-item .label { color:#64748B; }
+    .meta-item .value { color:#1E293B; font-weight:500; }
+    .detail-body { margin-bottom:24px; padding-top:16px; border-top:1px solid #F1F5F9; }
+    .detail-body h3 { font-size:17px; font-weight:600; margin-bottom:12px; }
+    .detail-body p { font-size:14px; color:#475569; line-height:1.9; }
+    .detail-actions { display:flex; gap:12px; padding-top:16px; border-top:1px solid #F1F5F9; }
+    .side-card { background:#fff; border-radius:14px; padding:20px; box-shadow:0 1px 8px rgba(0,0,0,0.04); margin-bottom:16px; }
+    .seller-info { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+    .seller-avatar { width:48px; height:48px; border-radius:50%; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
+    .seller-avatar img { width:100%; height:100%; object-fit:cover; }
+    .seller-name { font-size:16px; font-weight:600; }
+    .recommend-card { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid #F1F5F9; cursor:pointer; text-decoration:none; color:inherit; }
+    .recommend-card:last-child { border-bottom:none; }
+    .rec-img { width:56px; height:56px; border-radius:8px; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
+    .rec-img img { width:100%; height:100%; object-fit:cover; }
+    .rec-info { flex:1; min-width:0; }
+    .rec-title { font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .status-badge { display:inline-block; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:600; }
+    .status-lost { background:#FEF2F2; color:#DC2626; }
+    .status-found { background:#ECFDF5; color:#059669; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="top-nav">
+      <div class="nav-logo">🏫 校园轻集市</div>
+      <div class="nav-links">
+        <a href="home.html">首页</a>
+        <a href="category.html">分类浏览</a>
+        <a href="publish.html">发布信息</a>
+        <a href="messages.html">消息</a>
+        <a href="profile.html">个人中心</a>
+      </div>
+      <div class="nav-actions">
+        <el-button size="small" type="primary" onclick="location.href='login.html'">登录</el-button>
+        <el-button size="small" onclick="location.href='register.html'">注册</el-button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="home.html">首页</a><span>/</span><a href="category.html?cat=lost">失物招领</a><span>/</span><span style="color:#1E293B;">丢失黑色 AirPods Pro 耳机盒</span>
+      </div>
+
+      <div class="detail-grid">
+        <div>
+          <div class="main-card">
+            <div class="img-section">
+              <img src="https://images.unsplash.com/photo-1606841837239-c5a1a4a07afc?w=800&h=500&fit=crop" alt="失物图片">
+            </div>
+            <div class="main-body">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <span class="status-badge status-lost">😢 失物寻找</span>
+                <span style="font-size:13px;color:#64748B;">🕐 发布于 4 小时前</span>
+              </div>
+              <h1 class="detail-title">丢失黑色 AirPods Pro 充电盒</h1>
+              <div class="detail-tags">
+                <el-tag type="danger">📱 数码配件</el-tag>
+                <el-tag>AirPods Pro</el-tag>
+                <el-tag>黑色保护套</el-tag>
+                <span style="font-size:12px;color:#94A3B8;line-height:32px;">👁 156 次浏览</span>
+              </div>
+              <div class="detail-meta">
+                <div class="meta-item"><span class="label">📍 丢失地点：</span><span class="value">西门打印店附近</span></div>
+                <div class="meta-item"><span class="label">🕐 丢失时间：</span><span class="value">2026年6月28日 下午2点左右</span></div>
+                <div class="meta-item"><span class="label">📱 联系方式：</span><span class="value">139xxxx5678</span></div>
+                <div class="meta-item"><span class="label">🎁 酬谢：</span><span class="value" style="color:#F59E0B;">感谢酬金 ¥50</span></div>
+              </div>
+              <div class="detail-body">
+                <h3>📝 详细描述</h3>
+                <p>今天下午两点左右，在校本部西门打印店附近丢失了一个 AirPods Pro 的充电盒（只有充电盒，耳机在耳朵上）。<br><br>
+                充电盒特征：黑色的硅胶保护套，上面贴了一个白色的猫爪贴纸。充电盒背面有一处细小的划痕。序列号尾号为 X7K2。<br><br>
+                这个充电盒虽然不贵，但是里面有一些重要的情感回忆，那个贴纸是女朋友送的。如果哪位好心同学捡到了，麻烦联系我，必有酬谢！<br><br>
+                可以通过手机 139xxxx5678 联系我，或者直接送到 校本部5号楼306 也行。</p>
+              </div>
+              <div class="detail-actions">
+                <el-button type="primary" size="large" style="width:180px;">📞 联系失主</el-button>
+                <el-button size="large" style="width:100px;">⭐ 关注</el-button>
+                <div style="flex:1;"></div>
+                <el-button size="large" @click="markFound">✅ 标记已找到</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="side-card">
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">👤 发布者信息</h3>
+            <div class="seller-info">
+              <div class="seller-avatar"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" alt=""></div>
+              <div>
+                <div class="seller-name">李同学</div>
+                <div style="font-size:12px;color:#10B981;">✅ 已实名认证</div>
+              </div>
+            </div>
+            <div style="font-size:13px;color:#64748B;margin-bottom:16px;">📦 发布 3 条 · ⭐ 好评率 100%</div>
+            <el-button type="primary" style="width:100%;margin-bottom:8px;">📞 联系失主</el-button>
+            <el-button style="width:100%;">👀 查看TA的发布</el-button>
+          </div>
+
+          <div class="side-card">
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">🔍 附近失物招领</h3>
+            <a href="lost-detail.html" class="recommend-card">
+              <div class="rec-img"><img src="https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=200&h=200&fit=crop" alt=""></div>
+              <div class="rec-info"><div class="rec-title">拾到校园卡一张</div><div style="font-size:11px;color:#94A3B8;">图书馆二楼 · 45分钟前</div></div>
+              <el-tag size="small" type="info">招领</el-tag>
+            </a>
+            <a href="lost-detail.html" class="recommend-card">
+              <div class="rec-img"><img src="https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=200&h=200&fit=crop" alt=""></div>
+              <div class="rec-info"><div class="rec-title">丢失蓝色折叠伞</div><div style="font-size:11px;color:#94A3B8;">东区食堂 · 1天前</div></div>
+              <el-tag size="small" type="danger">失物</el-tag>
+            </a>
+            <a href="lost-detail.html" class="recommend-card">
+              <div class="rec-img"><img src="https://images.unsplash.com/photo-1544816155-12df9643f363?w=200&h=200&fit=crop" alt=""></div>
+              <div class="rec-info"><div class="rec-title">拾到钥匙一串</div><div style="font-size:11px;color:#94A3B8;">操场入口 · 3小时前</div></div>
+              <el-tag size="small" type="info">招领</el-tag>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue
+    const app = createApp({
+      setup() {
+        function markFound() { ElementPlus.ElMessage.success('已标记为"已找到"，感谢你的善举！') }
+        return { markFound }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+</script>
+</body>
+</html>

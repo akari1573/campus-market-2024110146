@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园轻集市 - 管理端首页</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; color: #1E293B; }
+    .admin-layout { display:flex; min-height:100vh; }
+    .admin-sidebar { width:240px; background:#1E293B; color:#fff; flex-shrink:0; display:flex; flex-direction:column; }
+    .sidebar-logo { padding:20px; font-size:18px; font-weight:800; border-bottom:1px solid #334155; }
+    .sidebar-menu { flex:1; padding:12px 0; }
+    .sidebar-menu a { display:flex; align-items:center; gap:10px; padding:12px 20px; color:#94A3B8; text-decoration:none; font-size:14px; transition:all 0.2s; }
+    .sidebar-menu a:hover, .sidebar-menu a.active { color:#fff; background:#334155; }
+    .sidebar-menu a.active { border-right:3px solid #3B82F6; }
+    .sidebar-user { padding:16px 20px; border-top:1px solid #334155; font-size:13px; color:#94A3B8; }
+    .admin-main { flex:1; padding:24px; }
+    .admin-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .admin-header h1 { font-size:24px; font-weight:700; }
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+    .stat-card { background:#fff; border-radius:14px; padding:24px; box-shadow:0 1px 6px rgba(0,0,0,0.04); }
+    .stat-card .icon { font-size:32px; margin-bottom:8px; }
+    .stat-card .num { font-size:32px; font-weight:800; }
+    .stat-card .label { font-size:13px; color:#64748B; margin-top:4px; }
+    .stat-card .change { font-size:12px; margin-top:4px; }
+    .section-card { background:#fff; border-radius:14px; padding:20px; box-shadow:0 1px 6px rgba(0,0,0,0.04); margin-bottom:20px; }
+    .section-card h3 { font-size:17px; font-weight:700; margin-bottom:16px; }
+    .review-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #F1F5F9; font-size:13px; }
+    .review-row:last-child { border-bottom:none; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="admin-layout">
+      <div class="admin-sidebar">
+        <div class="sidebar-logo">🛡️ 管理后台</div>
+        <div class="sidebar-menu">
+          <a href="admin-dashboard.html" class="active">📊 数据概览</a>
+          <a href="admin-review.html">📋 信息审核</a>
+          <a href="#">👥 用户管理</a>
+          <a href="#">🚩 举报处理</a>
+          <a href="#">📈 数据统计</a>
+          <a href="#">⚙️ 系统设置</a>
+        </div>
+        <div class="sidebar-user">
+          <div>👤 管理员</div>
+          <a href="home.html" style="color:#94A3B8;font-size:12px;">返回前台</a>
+        </div>
+      </div>
+
+      <div class="admin-main">
+        <div class="admin-header">
+          <h1>📊 数据概览</h1>
+          <span style="font-size:13px;color:#64748B;">最后更新：2026-06-28 15:30</span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="icon">📝</div>
+            <div class="num" style="color:#3B82F6;">{{ stats.today }}</div>
+            <div class="label">今日新增信息</div>
+            <div class="change" style="color:#10B981;">↑ 12% 较昨日</div>
+          </div>
+          <div class="stat-card">
+            <div class="icon">⏳</div>
+            <div class="num" style="color:#F59E0B;">{{ stats.pending }}</div>
+            <div class="label">待审核数量</div>
+            <div class="change" style="color:#EF4444;">需尽快处理</div>
+          </div>
+          <div class="stat-card">
+            <div class="icon">👥</div>
+            <div class="num" style="color:#10B981;">{{ stats.users }}</div>
+            <div class="label">注册用户</div>
+            <div class="change" style="color:#10B981;">↑ 8% 较上周</div>
+          </div>
+          <div class="stat-card">
+            <div class="icon">🚩</div>
+            <div class="num" style="color:#EF4444;">{{ stats.reports }}</div>
+            <div class="label">待处理举报</div>
+            <div class="change" style="color:#EF4444;">↑ 3 新增</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div class="section-card">
+            <h3>📋 最近审核记录</h3>
+            <div class="review-row">
+              <el-tag size="small" type="success">通过</el-tag>
+              <span style="flex:1;">二手自行车 - 张三</span>
+              <span style="color:#94A3B8;">10分钟前</span>
+            </div>
+            <div class="review-row">
+              <el-tag size="small" type="danger">驳回</el-tag>
+              <span style="flex:1;">代写论文广告 - 匿名</span>
+              <span style="color:#94A3B8;">25分钟前</span>
+            </div>
+            <div class="review-row">
+              <el-tag size="small" type="success">通过</el-tag>
+              <span style="flex:1;">拼奶茶 - 王同学</span>
+              <span style="color:#94A3B8;">1小时前</span>
+            </div>
+            <div class="review-row">
+              <el-tag size="small" type="success">通过</el-tag>
+              <span style="flex:1;">失物招领 - 校园卡</span>
+              <span style="color:#94A3B8;">2小时前</span>
+            </div>
+            <div class="review-row">
+              <el-tag size="small" type="warning">待审</el-tag>
+              <span style="flex:1;">二手显示器 - 新用户</span>
+              <span style="color:#94A3B8;">3小时前</span>
+            </div>
+          </div>
+
+          <div class="section-card">
+            <h3>⚡ 快捷操作</h3>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <a href="admin-review.html"><el-button type="primary" style="width:100%;">📋 进入信息审核</el-button></a>
+              <el-button style="width:100%;">👥 查看用户列表</el-button>
+              <el-button style="width:100%;">🚩 处理举报</el-button>
+              <el-button style="width:100%;">📈 查看详细统计</el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue
+    const app = createApp({
+      setup() {
+        const stats = ref({ today:48, pending:15, users:1256, reports:7 })
+        return { stats }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+</script>
+</body>
+</html>

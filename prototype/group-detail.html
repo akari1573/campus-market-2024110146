@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园轻集市 - 拼单搭子详情</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; }
+    .top-nav { display:flex; align-items:center; padding:0 24px; height:60px; background:#fff; box-shadow:0 1px 12px rgba(0,0,0,0.04); position:sticky; top:0; z-index:100; border-bottom:1px solid #F1F5F9; }
+    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; }
+    .nav-links { display:flex; gap:4px; }
+    .nav-links a { text-decoration:none; color:#475569; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color:#3B82F6; background:#EFF6FF; }
+    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:16px; }
+    .container { max-width:1200px; margin:0 auto; padding:24px; }
+    .breadcrumb { margin-bottom:20px; font-size:13px; color:#64748B; }
+    .breadcrumb a { color:#3B82F6; text-decoration:none; }
+    .detail-grid { display:grid; grid-template-columns:1fr 360px; gap:24px; }
+    .main-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); }
+    .img-section { height:300px; background:linear-gradient(135deg,#D1FAE5,#A7F3D0); display:flex; align-items:center; justify-content:center; }
+    .img-section img { max-width:100%; max-height:100%; object-fit:contain; }
+    .main-body { padding:24px; }
+    .detail-title { font-size:24px; font-weight:700; color:#1E293B; margin-bottom:12px; }
+    .detail-tags { display:flex; gap:8px; margin-bottom:16px; }
+    .progress-section { margin-bottom:20px; padding:16px; background:#F0FDF4; border-radius:10px; }
+    .detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; padding:16px; background:#F8FAFC; border-radius:10px; }
+    .meta-item { font-size:13px; }
+    .meta-item .label { color:#64748B; }
+    .meta-item .value { color:#1E293B; font-weight:500; }
+    .detail-body { margin-bottom:24px; padding-top:16px; border-top:1px solid #F1F5F9; }
+    .detail-body h3 { font-size:17px; font-weight:600; margin-bottom:12px; }
+    .detail-body p { font-size:14px; color:#475569; line-height:1.9; }
+    .detail-actions { display:flex; gap:12px; padding-top:16px; border-top:1px solid #F1F5F9; }
+    .member-list { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+    .member-avatar { width:36px; height:36px; border-radius:50%; overflow:hidden; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    .member-avatar img { width:100%; height:100%; object-fit:cover; }
+    .side-card { background:#fff; border-radius:14px; padding:20px; box-shadow:0 1px 8px rgba(0,0,0,0.04); margin-bottom:16px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="top-nav">
+      <div class="nav-logo">🏫 校园轻集市</div>
+      <div class="nav-links">
+        <a href="home.html">首页</a>
+        <a href="category.html">分类浏览</a>
+        <a href="publish.html">发布信息</a>
+        <a href="messages.html">消息</a>
+        <a href="profile.html">个人中心</a>
+      </div>
+      <div class="nav-actions">
+        <el-button size="small" type="primary" onclick="location.href='login.html'">登录</el-button>
+        <el-button size="small" onclick="location.href='register.html'">注册</el-button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="home.html">首页</a><span>/</span><a href="category.html?cat=group">拼单搭子</a><span>/</span><span style="color:#1E293B;">霸王茶姬拼奶茶 还差2人</span>
+      </div>
+
+      <div class="detail-grid">
+        <div>
+          <div class="main-card">
+            <div class="img-section">
+              <img src="https://images.unsplash.com/photo-1558857563-b371033873b8?w=600&h=300&fit=crop" alt="">
+            </div>
+            <div class="main-body">
+              <h1 class="detail-title">🥤 霸王茶姬拼奶茶 还差2人！</h1>
+              <div class="detail-tags">
+                <el-tag type="success">🍜 拼单购物</el-tag>
+                <el-tag>奶茶</el-tag>
+                <el-tag>6折优惠</el-tag>
+                <span style="font-size:12px;color:#94A3B8;line-height:32px;">👁 89次浏览 · 🕐 30分钟前</span>
+              </div>
+
+              <div class="progress-section">
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                  <span style="font-weight:600;">⏳ 拼单进度</span>
+                  <span style="font-weight:700;color:#059669;">3/5 人</span>
+                </div>
+                <el-progress :percentage="60" color="#10B981"></el-progress>
+                <div style="margin-top:8px;">
+                  <div class="member-list">
+                    <div class="member-avatar"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop" alt=""></div>
+                    <div class="member-avatar"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop" alt=""></div>
+                    <div class="member-avatar"><img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=80&h=80&fit=crop" alt=""></div>
+                    <div style="width:36px;height:36px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-size:12px;color:#94A3B8;">+2</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="detail-meta">
+                <div class="meta-item"><span class="label">💰 人均费用：</span><span class="value">约 ¥18 (原价¥30)</span></div>
+                <div class="meta-item"><span class="label">👥 需要人数：</span><span class="value">5 人</span></div>
+                <div class="meta-item"><span class="label">⏰ 截止时间：</span><span class="value">今天下午 5:00</span></div>
+                <div class="meta-item"><span class="label">📍 集合地点：</span><span class="value">东区食堂三楼奶茶店</span></div>
+              </div>
+
+              <div class="detail-body">
+                <h3>📝 拼单详情</h3>
+                <p>霸王茶姬最近出了新品，五个人一起拼可以享受 6 折优惠！目前已经有 3 个人确认了，还差 2 个小伙伴。<br><br>
+                计划今天下午 5 点在东区食堂三楼奶茶店集合，一起去买。到了大家可以自由选择自己喜欢的口味（都参与 6 折），然后一起结账。<br><br>
+                人均消费大约 18 元左右（原价 30 元左右），比单独买便宜将近一半！如果你是一个人也想喝奶茶，或者想尝尝新品，欢迎加入我们。<br><br>
+                不限制年级专业，只要准时到就行。加入后群里会发具体安排。</p>
+              </div>
+              <div class="detail-actions">
+                <el-button type="success" size="large" style="width:200px;" @click="joinGroup">🤝 加入拼单</el-button>
+                <el-button size="large" style="width:120px;">💬 联系发起者</el-button>
+                <div style="flex:1;"></div>
+                <el-button size="large">⭐ 收藏</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="side-card">
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">👤 发起者</h3>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;background:#E2E8F0;">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="" style="width:100%;height:100%;object-fit:cover;">
+              </div>
+              <div>
+                <div style="font-size:16px;font-weight:600;">王同学</div>
+                <div style="font-size:12px;color:#10B981;">✅ 已认证 · 发起过8次拼单</div>
+              </div>
+            </div>
+            <el-button type="success" style="width:100%;margin-bottom:8px;" @click="joinGroup">🤝 立即加入</el-button>
+            <el-button style="width:100%;">💬 联系发起者</el-button>
+          </div>
+
+          <div class="side-card">
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">📋 拼单须知</h3>
+            <div style="font-size:13px;color:#475569;line-height:1.8;">
+              · 请准时到达集合地点<br>
+              · 加入后请勿随意退出，影响其他人<br>
+              · 确定参与后请在群里确认口味<br>
+              · 费用按实际消费 AA 平摊
+            </div>
+          </div>
+
+          <div class="side-card">
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">🔥 更多拼单</h3>
+            <a href="group-detail.html" style="display:flex;gap:10px;padding:10px 0;text-decoration:none;color:inherit;border-bottom:1px solid #F1F5F9;">
+              <span style="font-size:20px;">🚗</span>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:500;">拼车去高铁站</div><div style="font-size:11px;color:#94A3B8;">¥30/人 · 周五晚7点</div></div>
+              <span style="font-size:13px;color:#10B981;">3/5人</span>
+            </a>
+            <a href="group-detail.html" style="display:flex;gap:10px;padding:10px 0;text-decoration:none;color:inherit;">
+              <span style="font-size:20px;">🏀</span>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:500;">篮球搭子缺3人</div><div style="font-size:11px;color:#94A3B8;">周六下午3点</div></div>
+              <span style="font-size:13px;color:#10B981;">5/8人</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp } = Vue
+    const app = createApp({
+      setup() {
+        function joinGroup() { ElementPlus.ElMessage.success('🎉 你已成功加入拼单！请准时到达集合地点。') }
+        return { joinGroup }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+</script>
+</body>
+</html>

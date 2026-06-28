@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园轻集市 - 我的发布</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; }
+    .top-nav { display:flex; align-items:center; padding:0 24px; height:60px; background:#fff; box-shadow:0 1px 12px rgba(0,0,0,0.04); position:sticky; top:0; z-index:100; border-bottom:1px solid #F1F5F9; }
+    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; }
+    .nav-links { display:flex; gap:4px; }
+    .nav-links a { text-decoration:none; color:#475569; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color:#3B82F6; background:#EFF6FF; }
+    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:16px; }
+    .container { max-width:1000px; margin:0 auto; padding:24px; }
+    .breadcrumb { margin-bottom:20px; font-size:13px; color:#64748B; }
+    .breadcrumb a { color:#3B82F6; text-decoration:none; }
+    .page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    .page-header h2 { font-size:24px; font-weight:700; }
+    .post-table { background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); }
+    .post-row { display:flex; align-items:center; gap:16px; padding:16px 20px; border-bottom:1px solid #F1F5F9; transition:background 0.15s; }
+    .post-row:hover { background:#F8FAFC; }
+    .post-row:last-child { border-bottom:none; }
+    .post-img { width:80px; height:60px; border-radius:8px; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
+    .post-img img { width:100%; height:100%; object-fit:cover; }
+    .post-info { flex:1; min-width:0; }
+    .post-title { font-size:15px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .post-meta { font-size:12px; color:#94A3B8; margin-top:2px; }
+    .post-price { font-size:16px; font-weight:800; color:#EF4444; white-space:nowrap; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="top-nav">
+      <div class="nav-logo">🏫 校园轻集市</div>
+      <div class="nav-links">
+        <a href="home.html">首页</a>
+        <a href="category.html">分类浏览</a>
+        <a href="publish.html">发布信息</a>
+        <a href="messages.html">消息</a>
+        <a href="profile.html" class="active">个人中心</a>
+      </div>
+      <div class="nav-actions">
+        <el-button size="small" type="primary" onclick="location.href='login.html'">登录</el-button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="home.html">首页</a><span>/</span><a href="profile.html">个人中心</a><span>/</span><span style="color:#1E293B;">我的发布</span>
+      </div>
+
+      <div class="page-header">
+        <h2>📋 我的发布（{{ posts.length }}条）</h2>
+        <el-button type="primary" onclick="location.href='publish.html'">+ 新建发布</el-button>
+      </div>
+
+      <div class="post-table">
+        <div v-for="p in posts" :key="p.id" class="post-row">
+          <div class="post-img"><img :src="p.image" alt=""></div>
+          <div class="post-info">
+            <div class="post-title">{{ p.title }}</div>
+            <div class="post-meta">
+              <el-tag size="small" :type="p.status==='active'?'success':p.status==='sold'?'info':'warning'">{{ p.statusText }}</el-tag>
+              <span style="margin-left:8px;">👁 {{ p.views }}次 · 🕐 {{ p.time }}</span>
+            </div>
+          </div>
+          <div class="post-price" v-if="p.price">¥{{ p.price }}</div>
+          <div style="display:flex;gap:8px;">
+            <el-button size="small" @click="editPost(p)">编辑</el-button>
+            <el-button size="small" :type="p.status==='active'?'success':''" @click="toggleStatus(p)">{{ p.status==='active'?'标记已售':'重新上架' }}</el-button>
+            <el-button size="small" type="danger" @click="deletePost(p)">删除</el-button>
+          </div>
+        </div>
+        <div v-if="posts.length===0" style="text-align:center;padding:60px 20px;color:#64748B;">
+          <div style="font-size:48px;margin-bottom:12px;">📭</div>
+          <p>还没有发布任何内容</p>
+          <el-button type="primary" style="margin-top:12px;" onclick="location.href='publish.html'">去发布</el-button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref } = Vue
+    const app = createApp({
+      setup() {
+        const posts = ref([
+          { id:1, title:'九成新 iPhone 14 Pro 256G 深空黑', price:'4200', status:'active', statusText:'在售中', views:328, time:'2026-06-20', image:'https://images.unsplash.com/photo-1592286927505-1def25115558?w=200&h=150&fit=crop' },
+          { id:2, title:'考研数学全套资料 几乎全新', price:'35', status:'active', statusText:'在售中', views:156, time:'2026-06-21', image:'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=200&h=150&fit=crop' },
+          { id:3, title:'宿舍小冰箱 50L 静音省电', price:'300', status:'sold', statusText:'已售出', views:512, time:'2026-06-10', image:'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=150&fit=crop' },
+          { id:4, title:'Kindle Paperwhite 4 国行', price:'400', status:'active', statusText:'在售中', views:432, time:'2026-06-24', image:'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200&h=150&fit=crop' },
+        ])
+        function toggleStatus(p) {
+          p.status = p.status === 'active' ? 'sold' : 'active'
+          p.statusText = p.status === 'active' ? '在售中' : '已售出'
+          ElementPlus.ElMessage.success(p.status === 'active' ? '商品已重新上架' : '已标记为售出')
+        }
+        function editPost(p) { ElementPlus.ElMessage.info('编辑功能将在后续版本开放') }
+        function deletePost(p) {
+          ElementPlus.ElMessageBox.confirm('确定删除这条发布吗？', '确认删除', { confirmButtonText:'确定', cancelButtonText:'取消', type:'warning' }).then(() => {
+            posts.value = posts.value.filter(x => x.id !== p.id)
+            ElementPlus.ElMessage.success('已删除')
+          }).catch(() => {})
+        }
+        return { posts, toggleStatus, editPost, deletePost }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+</script>
+</body>
+</html>

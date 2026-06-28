@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园轻集市 - 分类浏览</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+  <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; }
+    .top-nav { display:flex; align-items:center; padding:0 24px; height:60px; background:#fff; box-shadow:0 1px 12px rgba(0,0,0,0.04); position:sticky; top:0; z-index:100; border-bottom:1px solid #F1F5F9; }
+    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; }
+    .nav-links { display:flex; gap:4px; }
+    .nav-links a { text-decoration:none; color:#475569; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color:#3B82F6; background:#EFF6FF; }
+    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:16px; }
+    .container { max-width:1200px; margin:0 auto; padding:24px; }
+    .page-title { font-size:24px; font-weight:700; margin-bottom:20px; }
+    .filter-bar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:20px; padding:16px; background:#fff; border-radius:12px; box-shadow:0 1px 6px rgba(0,0,0,0.04); }
+    .filter-bar .el-input { width:240px; }
+    .result-info { font-size:13px; color:#64748B; margin-bottom:16px; }
+    .product-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px; }
+    .product-card { background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); transition:all 0.2s; cursor:pointer; text-decoration:none; color:inherit; display:block; }
+    .product-card:hover { transform:translateY(-3px); box-shadow:0 6px 20px rgba(0,0,0,0.1); }
+    .card-img { height:180px; background:#E2E8F0; overflow:hidden; }
+    .card-img img { width:100%; height:100%; object-fit:cover; }
+    .card-body { padding:14px; }
+    .card-title { font-size:15px; font-weight:600; color:#1E293B; margin-bottom:6px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .card-desc { font-size:12px; color:#64748B; line-height:1.5; margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .card-footer { display:flex; justify-content:space-between; align-items:center; }
+    .card-price { font-size:18px; font-weight:800; color:#EF4444; }
+    .card-meta { font-size:11px; color:#94A3B8; }
+    .pagination-wrap { display:flex; justify-content:center; margin-top:24px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="top-nav">
+      <div class="nav-logo">🏫 校园轻集市</div>
+      <div class="nav-links">
+        <a href="home.html">首页</a>
+        <a href="category.html" class="active">分类浏览</a>
+        <a href="publish.html">发布信息</a>
+        <a href="messages.html">消息</a>
+        <a href="profile.html">个人中心</a>
+      </div>
+      <div class="nav-actions">
+        <el-button size="small" type="primary" onclick="location.href='login.html'">登录</el-button>
+        <el-button size="small" onclick="location.href='register.html'">注册</el-button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="page-title">🔍 分类浏览</div>
+
+      <div class="filter-bar">
+        <el-input v-model="searchText" placeholder="搜索商品、失物、拼单..." clearable size="default" style="width:260px;">
+          <template #prefix><span>🔍</span></template>
+        </el-input>
+        <el-select v-model="category" placeholder="信息分类" clearable size="default" style="width:150px;">
+          <el-option label="全部" value="all"></el-option>
+          <el-option label="二手交易" value="secondhand"></el-option>
+          <el-option label="失物招领" value="lost"></el-option>
+          <el-option label="拼单搭子" value="group"></el-option>
+          <el-option label="跑腿委托" value="errand"></el-option>
+        </el-select>
+        <el-select v-model="location" placeholder="地点筛选" clearable size="default" style="width:150px;">
+          <el-option label="全部" value="all"></el-option>
+          <el-option label="校本部" value="main"></el-option>
+          <el-option label="东校区" value="east"></el-option>
+          <el-option label="西校区" value="west"></el-option>
+          <el-option label="北校区" value="north"></el-option>
+        </el-select>
+        <el-select v-model="sortBy" placeholder="排序方式" size="default" style="width:140px;">
+          <el-option label="最新发布" value="newest"></el-option>
+          <el-option label="价格低到高" value="price_asc"></el-option>
+          <el-option label="价格高到低" value="price_desc"></el-option>
+          <el-option label="最多浏览" value="views"></el-option>
+        </el-select>
+        <div style="flex:1;"></div>
+        <span style="font-size:13px;color:#64748B;">共 {{ totalItems }} 条信息</span>
+      </div>
+
+      <div class="result-info">找到 {{ filteredItems.length }} 条结果</div>
+
+      <div class="product-grid">
+        <a v-for="item in pagedItems" :key="item.id" :href="item.link" class="product-card">
+          <div class="card-img">
+            <img :src="item.image" :alt="item.title">
+          </div>
+          <div class="card-body">
+            <div class="card-title">{{ item.title }}</div>
+            <div class="card-desc">{{ item.desc }}</div>
+            <div class="card-footer">
+              <span class="card-price">{{ item.price }}</span>
+              <span class="card-meta">
+                <el-tag size="small" :type="item.tagType" style="margin-right:4px;">{{ item.tag }}</el-tag>
+                📍 {{ item.location }}
+              </span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="pagination-wrap">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="filteredItems.length"
+          :page-size="pageSize"
+          v-model:current-page="currentPage"
+        ></el-pagination>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { createApp, ref, computed } = Vue
+    const app = createApp({
+      setup() {
+        const searchText = ref('')
+        const category = ref('all')
+        const location = ref('all')
+        const sortBy = ref('newest')
+        const currentPage = ref(1)
+        const pageSize = ref(8)
+
+        const allItems = ref([
+          { id:1, title:'九成新 iPhone 14 Pro 256G', desc:'戴壳贴膜使用，无划痕无维修，电池92%，配件齐全。', price:'¥4,200', tag:'二手', tagType:'primary', location:'校本部3号楼', time:'2小时前', image:'https://images.unsplash.com/photo-1592286927505-1def25115558?w=400&h=320&fit=crop', link:'item-detail.html', cat:'secondhand', loc:'main' },
+          { id:2, title:'考研数学全套资料 几乎全新', desc:'高数线代概率论三门重点笔记加真题解析，只做了前几页笔记。', price:'¥35', tag:'二手', tagType:'primary', location:'校本部5号楼', time:'3小时前', image:'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=320&fit=crop', link:'item-detail.html', cat:'secondhand', loc:'main' },
+          { id:3, title:'Cherry MX 青轴机械键盘', desc:'87键RGB背光，手感清脆利落，使用一年半正常痕迹，包装齐全。', price:'¥150', tag:'二手', tagType:'primary', location:'校本部2号楼', time:'5小时前', image:'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400&h=320&fit=crop', link:'item-detail.html', cat:'secondhand', loc:'main' },
+          { id:4, title:'Dell U2419H 24寸2K显示器', desc:'IPS面板，99%sRGB色域，超窄边框，做设计写代码都很合适。', price:'¥600', tag:'二手', tagType:'primary', location:'校本部3号楼', time:'1天前', image:'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400&h=320&fit=crop', link:'item-detail.html', cat:'secondhand', loc:'main' },
+          { id:5, title:'宿舍小冰箱 50L 静音省电', desc:'制冷效果好，噪音<35分贝，功率仅60W，上层冷冻下层冷藏。', price:'¥300', tag:'二手', tagType:'primary', location:'校本部6号楼', time:'2天前', image:'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=400&h=320&fit=crop', link:'item-detail.html', cat:'secondhand', loc:'main' },
+          { id:6, title:'拾到校园卡一张 请失主联系', desc:'图书馆二楼自习室捡到，卡号尾号8832，请失主尽快联系核实。', price:'-', tag:'招领', tagType:'info', location:'图书馆二楼', time:'45分钟前', image:'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=400&h=320&fit=crop', link:'lost-detail.html', cat:'lost', loc:'main' },
+          { id:7, title:'西门打印店附近丢失黑色耳机盒', desc:'AirPods Pro充电盒，黑色硅胶保护套，贴了猫爪贴纸，下午两点丢的。', price:'-', tag:'失物', tagType:'danger', location:'西门打印店', time:'4小时前', image:'https://images.unsplash.com/photo-1606841837239-c5a1a4a07afc?w=400&h=320&fit=crop', link:'lost-detail.html', cat:'lost', loc:'main' },
+          { id:8, title:'丢失一把蓝色折叠伞', desc:'昨天在东区食堂二楼吃饭时忘记拿了，蓝色天堂伞，手柄有点磨损。', price:'-', tag:'失物', tagType:'danger', location:'东区食堂', time:'1天前', image:'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=400&h=320&fit=crop', link:'lost-detail.html', cat:'lost', loc:'east' },
+          { id:9, title:'东区食堂三楼拼奶茶 还差2人', desc:'霸王茶姬新品5人拼6折优惠，已有3人，还差2人！周五下午一起去。', price:'人均¥18', tag:'拼单', tagType:'success', location:'东区食堂', time:'30分钟前', image:'https://images.unsplash.com/photo-1558857563-b371033873b8?w=400&h=320&fit=crop', link:'group-detail.html', cat:'group', loc:'east' },
+          { id:10, title:'周五晚上拼车去高铁站', desc:'周五晚7点南门出发，舒适五座3个空位，每人30元，准时出发。', price:'¥30/人', tag:'拼单', tagType:'success', location:'校本部南门', time:'6小时前', image:'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=320&fit=crop', link:'group-detail.html', cat:'group', loc:'main' },
+          { id:11, title:'周六下午篮球搭子 缺3人', desc:'每周六下午3点体育馆，半场4v4，目前5人，再找3个，水平不限开心就好。', price:'免费', tag:'搭子', tagType:'', location:'体育馆篮球场', time:'5小时前', image:'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=400&h=320&fit=crop', link:'group-detail.html', cat:'group', loc:'main' },
+          { id:12, title:'求帮取快递到6栋宿舍', desc:'中通快递，在西门菜鸟驿站，是件羽绒服不重但体积大，送到6栋楼下。', price:'酬谢¥5', tag:'跑腿', tagType:'warning', location:'西门菜鸟驿站', time:'1小时前', image:'https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=400&h=320&fit=crop', link:'task-detail.html', cat:'errand', loc:'main' },
+          { id:13, title:'求帮买东门煎饼果子', desc:'晚上想吃煎饼果子，加蛋加肠不要辣，送到3号楼405，微信转钱。', price:'酬谢¥8', tag:'跑腿', tagType:'warning', location:'东门夜市', time:'20分钟前', image:'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=400&h=320&fit=crop', link:'task-detail.html', cat:'errand', loc:'east' },
+          { id:14, title:'代打印论文 30页', desc:'需要打印论文初稿，30页双面，送到图书馆三楼自习区12号桌。', price:'酬谢¥3', tag:'跑腿', tagType:'warning', location:'图书馆打印室', time:'2小时前', image:'https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400&h=320&fit=crop', link:'task-detail.html', cat:'errand', loc:'main' },
+          { id:15, title:'Kindle Paperwhite 4 国行', desc:'8G内存带背光，屏幕轻微划痕不影响阅读，续航强，送原装保护壳。', price:'¥400', tag:'二手', tagType:'primary', location:'校本部1号楼', time:'3天前', image:'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=320&fit=crop', link:'item-detail.html', cat:'secondhand', loc:'main' },
+          { id:16, title:'吉他 Yamaha F310 入门神器', desc:'弦距已调低按弦轻松，音色温暖饱满，送琴包调音器备用琴弦。', price:'¥450', tag:'二手', tagType:'primary', location:'校本部4号楼', time:'3天前', image:'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=320&fit=crop', link:'item-detail.html', cat:'secondhand', loc:'main' },
+        ])
+
+        const filteredItems = computed(() => {
+          let items = [...allItems.value]
+          if (searchText.value) {
+            const q = searchText.value.toLowerCase()
+            items = items.filter(i => i.title.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q))
+          }
+          if (category.value !== 'all') items = items.filter(i => i.cat === category.value)
+          if (location.value !== 'all') items = items.filter(i => i.loc === location.value)
+          if (sortBy.value === 'newest') items.sort((a,b) => b.id - a.id)
+          if (sortBy.value === 'price_asc') items.sort((a,b) => parseFloat(a.price.replace(/[^0-9.]/g,'')) - parseFloat(b.price.replace(/[^0-9.]/g,'')))
+          if (sortBy.value === 'price_desc') items.sort((a,b) => parseFloat(b.price.replace(/[^0-9.]/g,'')) - parseFloat(a.price.replace(/[^0-9.]/g,'')))
+          return items
+        })
+
+        const totalItems = computed(() => allItems.value.length)
+        const pagedItems = computed(() => {
+          const start = (currentPage.value - 1) * pageSize.value
+          return filteredItems.value.slice(start, start + pageSize.value)
+        })
+
+        return { searchText, category, location, sortBy, currentPage, pageSize, filteredItems, totalItems, pagedItems }
+      }
+    })
+    app.use(ElementPlus)
+    app.mount('#app')
+</script>
+</body>
+</html>
