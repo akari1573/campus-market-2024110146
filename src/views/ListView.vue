@@ -1,92 +1,189 @@
 <script setup lang="ts">
-const items = [
-  { id: 1, title: '二手自行车', price: 200, desc: '九成新，买了半年没怎么骑' },
-  { id: 2, title: '考研数学资料', price: 35, desc: '几乎全新，做了几页笔记' },
-  { id: 3, title: '机械键盘 Cherry 轴', price: 150, desc: '青轴，手感极佳，毕业出' },
-  { id: 4, title: '床上折叠桌', price: 25, desc: '懒人必备，可调节高度' },
-  { id: 5, title: 'Kindle Paperwhite 4', price: 400, desc: '国行，带背光，轻微划痕' },
-]
+import { useMarketStore } from '@/stores/market'
+import { useRouter } from 'vue-router'
+
+const store = useMarketStore()
+const router = useRouter()
+
+function goDetail(id: number) {
+  router.push(`/detail/${id}`)
+}
 </script>
 
 <template>
-  <div>
-    <h2>商品列表</h2>
-    <div class="list">
-      <router-link
-        v-for="item in items"
+  <div class="list-page">
+    <div class="list-header">
+      <h2 class="list-title">🛍️ 商品列表</h2>
+      <span class="list-count">共 {{ store.products.length }} 件商品</span>
+    </div>
+
+    <div class="list-grid">
+      <div
+        v-for="item in store.products"
         :key="item.id"
-        :to="`/detail/${item.id}`"
-        class="card"
+        class="product-card"
+        @click="goDetail(item.id)"
       >
-        <div class="card-header">
-          <span class="card-title">{{ item.title }}</span>
-          <span class="card-price">¥{{ item.price }}</span>
+        <div class="card-img-box">
+          <img v-if="item.image" :src="item.image" class="card-img" />
+          <span v-else class="card-img-placeholder">
+            <span class="img-icon">📸</span>
+          </span>
+          <span class="card-category">{{ item.category }}</span>
         </div>
-        <p class="card-desc">{{ item.desc }}</p>
-        <span class="card-link">查看详情 →</span>
-      </router-link>
+        <div class="card-body">
+          <h3 class="card-title">{{ item.title }}</h3>
+          <p class="card-desc">{{ item.desc }}</p>
+          <div class="card-footer">
+            <span class="card-price">¥{{ item.price }}</span>
+            <span class="card-meta">
+              <span class="meta-seller">{{ item.seller }}</span>
+              <span class="meta-views">{{ item.views }}次浏览</span>
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-h2 {
-  margin: 0 0 20px;
-  color: #303133;
+.list-page {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-}
-
-.card {
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  text-decoration: none;
-  color: inherit;
-  transition: box-shadow 0.2s, transform 0.2s;
-}
-
-.card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.card-header {
+.list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 24px;
+}
+
+.list-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.list-count {
+  font-size: 14px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 4px 14px;
+  border-radius: 12px;
+}
+
+.list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.product-card {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.card-img-box {
+  position: relative;
+  height: 180px;
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+  overflow: hidden;
+}
+
+.card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.img-icon {
+  font-size: 48px;
+  opacity: 0.35;
+}
+
+.card-category {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+
+.card-body {
+  padding: 16px;
 }
 
 .card-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: #303133;
-}
-
-.card-price {
-  font-size: 18px;
-  color: #f56c6c;
-  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card-desc {
-  margin: 0 0 12px;
-  color: #909399;
   font-size: 13px;
+  color: #64748b;
   line-height: 1.5;
+  margin: 0 0 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.card-link {
-  margin-top: auto;
-  font-size: 13px;
-  color: #409eff;
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-price {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ef4444;
+}
+
+.card-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.meta-seller {
+  font-size: 12px;
+  color: #475569;
+}
+
+.meta-views {
+  font-size: 11px;
+  color: #94a3b8;
 }
 </style>

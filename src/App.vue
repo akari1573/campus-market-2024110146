@@ -34,7 +34,7 @@ const activeIndex = computed(() => route.path)
 <style scoped>
 .app {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: #f8fafc;
 }
 
 .header {
@@ -43,18 +43,22 @@ const activeIndex = computed(() => route.path)
   padding: 0 24px;
   height: 60px;
   background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 12px rgba(0, 0, 0, 0.04);
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 1px solid #e4e7ed;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .logo {
   font-size: 20px;
-  color: #409eff;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0;
   white-space: nowrap;
+  font-weight: 800;
 }
 
 .nav-menu {
