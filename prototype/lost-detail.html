@@ -10,51 +10,60 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; }
-    .top-nav { display:flex; align-items:center; padding:0 24px; height:60px; background:#fff; box-shadow:0 1px 12px rgba(0,0,0,0.04); position:sticky; top:0; z-index:100; border-bottom:1px solid #F1F5F9; }
-    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; }
-    .nav-links { display:flex; gap:4px; }
-    .nav-links a { text-decoration:none; color:#475569; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#F1F5F9; color:#1E293B; }
+    a { text-decoration:none; }
+    .top-nav { display:flex; align-items:center; padding:0 28px; height:64px; background:#fff; position:sticky; top:0; z-index:100; border-bottom:1px solid #E2E8F0; box-shadow:0 1px 12px rgba(0,0,0,0.03); }
+    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; display:flex; align-items:center; gap:6px; }
+    .nav-logo .logo-icon { font-size:26px; -webkit-text-fill-color:initial; }
+    .nav-links { display:flex; gap:2px; }
+    .nav-links a { text-decoration:none; color:#475569; padding:8px 18px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
     .nav-links a:hover, .nav-links a.active { color:#3B82F6; background:#EFF6FF; }
-    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:16px; }
-    .container { max-width:1200px; margin:0 auto; padding:24px; }
-    .breadcrumb { margin-bottom:20px; font-size:13px; color:#64748B; }
-    .breadcrumb a { color:#3B82F6; text-decoration:none; }
-    .detail-grid { display:grid; grid-template-columns:1fr 360px; gap:24px; }
-    .main-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); }
-    .img-section { height:360px; background:#E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-    .img-section img { width:100%; height:100%; object-fit:cover; }
+    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:18px; }
+    .container { max-width:1240px; margin:0 auto; padding:24px; }
+    .breadcrumb { margin-bottom:20px; font-size:13px; color:#64748B; display:flex; align-items:center; gap:6px; }
+    .breadcrumb a { color:#3B82F6; }
+    .breadcrumb .sep { color:#CBD5E1; }
+    .detail-grid { display:grid; grid-template-columns:1fr 380px; gap:24px; }
+    .main-card { background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); border:1px solid #F1F5F9; }
+    .img-main { height:400px; background:#E2E8F0; overflow:hidden; }
+    .img-main img { width:100%; height:100%; object-fit:cover; }
     .main-body { padding:24px; }
-    .detail-title { font-size:24px; font-weight:700; color:#1E293B; margin-bottom:12px; }
-    .detail-tags { display:flex; gap:8px; margin-bottom:16px; }
-    .detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; padding:16px; background:#F8FAFC; border-radius:10px; }
-    .meta-item { font-size:13px; }
-    .meta-item .label { color:#64748B; }
-    .meta-item .value { color:#1E293B; font-weight:500; }
-    .detail-body { margin-bottom:24px; padding-top:16px; border-top:1px solid #F1F5F9; }
-    .detail-body h3 { font-size:17px; font-weight:600; margin-bottom:12px; }
-    .detail-body p { font-size:14px; color:#475569; line-height:1.9; }
-    .detail-actions { display:flex; gap:12px; padding-top:16px; border-top:1px solid #F1F5F9; }
-    .side-card { background:#fff; border-radius:14px; padding:20px; box-shadow:0 1px 8px rgba(0,0,0,0.04); margin-bottom:16px; }
-    .seller-info { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
-    .seller-avatar { width:48px; height:48px; border-radius:50%; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
-    .seller-avatar img { width:100%; height:100%; object-fit:cover; }
-    .seller-name { font-size:16px; font-weight:600; }
-    .recommend-card { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid #F1F5F9; cursor:pointer; text-decoration:none; color:inherit; }
-    .recommend-card:last-child { border-bottom:none; }
-    .rec-img { width:56px; height:56px; border-radius:8px; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
-    .rec-img img { width:100%; height:100%; object-fit:cover; }
-    .rec-info { flex:1; min-width:0; }
-    .rec-title { font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .status-badge { display:inline-block; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:600; }
+    .status-badge { display:inline-flex; align-items:center; gap:5px; padding:7px 18px; border-radius:24px; font-size:13px; font-weight:600; margin-bottom:14px; }
     .status-lost { background:#FEF2F2; color:#DC2626; }
     .status-found { background:#ECFDF5; color:#059669; }
+    .detail-title { font-size:24px; font-weight:700; color:#1E293B; margin-bottom:14px; }
+    .detail-tags { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
+    .detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px; padding:18px; background:#F8FAFC; border-radius:12px; }
+    .meta-item { font-size:13px; display:flex; gap:4px; }
+    .meta-item .lbl { color:#64748B; white-space:nowrap; }
+    .meta-item .val { color:#1E293B; font-weight:500; }
+    .detail-body { margin-bottom:24px; padding-top:18px; border-top:1px solid #F1F5F9; }
+    .detail-body h3 { font-size:17px; font-weight:600; margin-bottom:12px; }
+    .detail-body p { font-size:14px; color:#475569; line-height:2; }
+    .detail-actions { display:flex; gap:12px; padding-top:18px; border-top:1px solid #F1F5F9; flex-wrap:wrap; }
+    .side-card { background:#fff; border-radius:16px; padding:22px; box-shadow:0 1px 8px rgba(0,0,0,0.04); margin-bottom:16px; border:1px solid #F1F5F9; }
+    .side-card h3 { font-size:16px; font-weight:700; color:#1E293B; margin-bottom:16px; display:flex; align-items:center; gap:6px; }
+    .seller-row { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+    .seller-avt { width:52px; height:52px; border-radius:50%; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
+    .seller-avt img { width:100%; height:100%; object-fit:cover; }
+    .seller-name { font-size:16px; font-weight:600; }
+    .rec-row { display:flex; gap:10px; padding:11px 0; border-bottom:1px solid #F8FAFC; text-decoration:none; color:inherit; transition:color 0.2s; }
+    .rec-row:last-child { border-bottom:none; }
+    .rec-row:hover { color:#3B82F6; }
+    .rec-thumb { width:56px; height:56px; border-radius:10px; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
+    .rec-thumb img { width:100%; height:100%; object-fit:cover; }
+    .rec-mid { flex:1; min-width:0; }
+    .rec-name { font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .rec-meta { font-size:11px; color:#94A3B8; }
+    .footer-bar { background:#fff; border-top:1px solid #E2E8F0; margin-top:40px; padding:24px; text-align:center; }
+    .footer-bar p { font-size:12px; color:#94A3B8; line-height:1.8; }
+    .footer-bar a { color:#3B82F6; text-decoration:none; }
   </style>
 </head>
 <body>
   <div id="app">
     <div class="top-nav">
-      <div class="nav-logo">🏫 校园轻集市</div>
+      <div class="nav-logo"><span class="logo-icon">🏫</span> 校园轻集市</div>
       <div class="nav-links">
         <a href="home.html">首页</a>
         <a href="category.html">分类浏览</a>
@@ -63,52 +72,46 @@
         <a href="profile.html">个人中心</a>
       </div>
       <div class="nav-actions">
-        <el-button size="small" type="primary" onclick="location.href='login.html'">登录</el-button>
-        <el-button size="small" onclick="location.href='register.html'">注册</el-button>
+        <el-button size="default" type="primary" onclick="location.href='login.html'">登录</el-button>
+        <el-button size="default" onclick="location.href='register.html'">注册</el-button>
       </div>
     </div>
 
     <div class="container">
       <div class="breadcrumb">
-        <a href="home.html">首页</a><span>/</span><a href="category.html?cat=lost">失物招领</a><span>/</span><span style="color:#1E293B;">丢失黑色 AirPods Pro 耳机盒</span>
+        <a href="home.html">首页</a><span class="sep">/</span><a href="category.html?cat=lost">失物招领</a><span class="sep">/</span><span style="color:#1E293B;font-weight:500;">西门打印店丢失黑色 AirPods Pro 充电盒</span>
       </div>
 
       <div class="detail-grid">
         <div>
           <div class="main-card">
-            <div class="img-section">
-              <img src="https://images.unsplash.com/photo-1606841837239-c5a1a4a07afc?w=800&h=500&fit=crop" alt="失物图片">
-            </div>
+            <div class="img-main"><img src="https://images.unsplash.com/photo-1606841837239-c5a1a4a07afc?w=900&h=600&fit=crop" alt=""></div>
             <div class="main-body">
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+              <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap;">
                 <span class="status-badge status-lost">😢 失物寻找</span>
-                <span style="font-size:13px;color:#64748B;">🕐 发布于 4 小时前</span>
+                <span style="font-size:13px;color:#64748B;">🕐 发布于 4 小时前 · 👁 156 次浏览</span>
               </div>
               <h1 class="detail-title">丢失黑色 AirPods Pro 充电盒</h1>
               <div class="detail-tags">
                 <el-tag type="danger">📱 数码配件</el-tag>
                 <el-tag>AirPods Pro</el-tag>
-                <el-tag>黑色保护套</el-tag>
-                <span style="font-size:12px;color:#94A3B8;line-height:32px;">👁 156 次浏览</span>
+                <el-tag>黑色硅胶保护套</el-tag>
               </div>
               <div class="detail-meta">
-                <div class="meta-item"><span class="label">📍 丢失地点：</span><span class="value">西门打印店附近</span></div>
-                <div class="meta-item"><span class="label">🕐 丢失时间：</span><span class="value">2026年6月28日 下午2点左右</span></div>
-                <div class="meta-item"><span class="label">📱 联系方式：</span><span class="value">139xxxx5678</span></div>
-                <div class="meta-item"><span class="label">🎁 酬谢：</span><span class="value" style="color:#F59E0B;">感谢酬金 ¥50</span></div>
+                <div class="meta-item"><span class="lbl">📍 丢失地点：</span><span class="val">校本部西门打印店附近</span></div>
+                <div class="meta-item"><span class="lbl">🕐 丢失时间：</span><span class="val">2026年6月28日 下午2点左右</span></div>
+                <div class="meta-item"><span class="lbl">📱 联系方式：</span><span class="val">139xxxx5678</span></div>
+                <div class="meta-item"><span class="lbl">🎁 酬谢：</span><span class="val" style="color:#F59E0B;">感谢酬金 ¥50</span></div>
               </div>
               <div class="detail-body">
                 <h3>📝 详细描述</h3>
-                <p>今天下午两点左右，在校本部西门打印店附近丢失了一个 AirPods Pro 的充电盒（只有充电盒，耳机在耳朵上）。<br><br>
-                充电盒特征：黑色的硅胶保护套，上面贴了一个白色的猫爪贴纸。充电盒背面有一处细小的划痕。序列号尾号为 X7K2。<br><br>
-                这个充电盒虽然不贵，但是里面有一些重要的情感回忆，那个贴纸是女朋友送的。如果哪位好心同学捡到了，麻烦联系我，必有酬谢！<br><br>
-                可以通过手机 139xxxx5678 联系我，或者直接送到 校本部5号楼306 也行。</p>
+                <p>今天下午两点左右，在校本部西门打印店附近丢失了一个 AirPods Pro 的充电盒（只有充电盒，耳机在耳朵上）。<br><br>充电盒特征：黑色硅胶保护套，上面贴了一个白色的猫爪贴纸。背面有一处细小划痕，序列号尾号 X7K2。<br><br>这个充电盒虽然不贵，但上面的猫爪贴纸是女朋友送的，有纪念意义。如果哪位好心同学捡到了，麻烦联系我，必有酬谢！<br><br>可以打139xxxx5678或者直接送到校本部5号楼306。</p>
               </div>
               <div class="detail-actions">
-                <el-button type="primary" size="large" style="width:180px;">📞 联系失主</el-button>
-                <el-button size="large" style="width:100px;">⭐ 关注</el-button>
+                <el-button type="primary" size="large" style="min-width:180px;" @click="contact">📞 联系失主</el-button>
+                <el-button size="large" style="min-width:110px;">⭐ 关注</el-button>
                 <div style="flex:1;"></div>
-                <el-button size="large" @click="markFound">✅ 标记已找到</el-button>
+                <el-button size="large" type="success" @click="markFound">✅ 标记已找到</el-button>
               </div>
             </div>
           </div>
@@ -116,52 +119,58 @@
 
         <div>
           <div class="side-card">
-            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">👤 发布者信息</h3>
-            <div class="seller-info">
-              <div class="seller-avatar"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" alt=""></div>
+            <h3>👤 发布者信息</h3>
+            <div class="seller-row">
+              <div class="seller-avt"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop" alt=""></div>
               <div>
                 <div class="seller-name">李同学</div>
-                <div style="font-size:12px;color:#10B981;">✅ 已实名认证</div>
+                <div style="font-size:12px;color:#10B981;">✅ 已实名认证 · 好评率 100%</div>
               </div>
             </div>
-            <div style="font-size:13px;color:#64748B;margin-bottom:16px;">📦 发布 3 条 · ⭐ 好评率 100%</div>
-            <el-button type="primary" style="width:100%;margin-bottom:8px;">📞 联系失主</el-button>
+            <div style="font-size:13px;color:#64748B;margin-bottom:16px;">📦 发布 3 条 · 校本部5号楼306</div>
+            <el-button type="primary" style="width:100%;margin-bottom:8px;" @click="contact">📞 联系失主</el-button>
             <el-button style="width:100%;">👀 查看TA的发布</el-button>
           </div>
 
           <div class="side-card">
-            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">🔍 附近失物招领</h3>
-            <a href="lost-detail.html" class="recommend-card">
-              <div class="rec-img"><img src="https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=200&h=200&fit=crop" alt=""></div>
-              <div class="rec-info"><div class="rec-title">拾到校园卡一张</div><div style="font-size:11px;color:#94A3B8;">图书馆二楼 · 45分钟前</div></div>
+            <h3>🔍 附近失物招领</h3>
+            <a href="lost-detail.html" class="rec-row">
+              <div class="rec-thumb"><img src="https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=200&h=200&fit=crop" alt=""></div>
+              <div class="rec-mid"><div class="rec-name">拾到校园卡一张 尾号8832</div><div class="rec-meta">图书馆二楼 · 45分钟前</div></div>
               <el-tag size="small" type="info">招领</el-tag>
             </a>
-            <a href="lost-detail.html" class="recommend-card">
-              <div class="rec-img"><img src="https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=200&h=200&fit=crop" alt=""></div>
-              <div class="rec-info"><div class="rec-title">丢失蓝色折叠伞</div><div style="font-size:11px;color:#94A3B8;">东区食堂 · 1天前</div></div>
+            <a href="lost-detail.html" class="rec-row">
+              <div class="rec-thumb"><img src="https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=200&h=200&fit=crop" alt=""></div>
+              <div class="rec-mid"><div class="rec-name">东区食堂丢失蓝色折叠伞</div><div class="rec-meta">东区食堂 · 1天前</div></div>
               <el-tag size="small" type="danger">失物</el-tag>
             </a>
-            <a href="lost-detail.html" class="recommend-card">
-              <div class="rec-img"><img src="https://images.unsplash.com/photo-1544816155-12df9643f363?w=200&h=200&fit=crop" alt=""></div>
-              <div class="rec-info"><div class="rec-title">拾到钥匙一串</div><div style="font-size:11px;color:#94A3B8;">操场入口 · 3小时前</div></div>
+            <a href="lost-detail.html" class="rec-row">
+              <div class="rec-thumb"><img src="https://images.unsplash.com/photo-1544816155-12df9643f363?w=200&h=200&fit=crop" alt=""></div>
+              <div class="rec-mid"><div class="rec-name">操场入口拾到钥匙一串</div><div class="rec-meta">操场入口 · 3小时前</div></div>
               <el-tag size="small" type="info">招领</el-tag>
             </a>
           </div>
         </div>
       </div>
     </div>
+
+    <div class="footer-bar">
+      <p>© 2026 校园轻集市 · 为校园生活而生</p>
+      <p><a href="home.html">返回首页</a> · <a href="category.html">分类浏览</a></p>
+    </div>
   </div>
 
   <script>
-    const { createApp, ref } = Vue
+    const { createApp } = Vue
     const app = createApp({
       setup() {
-        function markFound() { ElementPlus.ElMessage.success('已标记为"已找到"，感谢你的善举！') }
-        return { markFound }
+        function contact() { ElementPlus.ElMessage.success('已发送联系请求，请等待回复') }
+        function markFound() { ElementPlus.ElMessageBox.confirm('确定标记为"已找到"吗？','确认',{confirmButtonText:'确定',cancelButtonText:'取消'}).then(()=>{ElementPlus.ElMessage.success('已标记为"已找到"，感谢善举！')}).catch(()=>{}) }
+        return { contact, markFound }
       }
     })
     app.use(ElementPlus)
     app.mount('#app')
-</script>
+  </script>
 </body>
 </html>

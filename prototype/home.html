@@ -10,51 +10,74 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; }
-    .top-nav { display:flex; align-items:center; padding:0 24px; height:60px; background:#fff; box-shadow:0 1px 12px rgba(0,0,0,0.04); position:sticky; top:0; z-index:100; border-bottom:1px solid #F1F5F9; }
-    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; }
-    .nav-links { display:flex; gap:4px; }
-    .nav-links a { text-decoration:none; color:#475569; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#F1F5F9; color:#1E293B; }
+    a { text-decoration:none; }
+    .top-nav { display:flex; align-items:center; padding:0 28px; height:64px; background:#fff; position:sticky; top:0; z-index:100; border-bottom:1px solid #E2E8F0; box-shadow:0 1px 12px rgba(0,0,0,0.03); }
+    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; display:flex; align-items:center; gap:6px; }
+    .nav-logo .logo-icon { font-size:26px; -webkit-text-fill-color:initial; }
+    .nav-links { display:flex; gap:2px; }
+    .nav-links a { text-decoration:none; color:#475569; padding:8px 18px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
     .nav-links a:hover, .nav-links a.active { color:#3B82F6; background:#EFF6FF; }
-    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:16px; }
-    .container { max-width:1200px; margin:0 auto; padding:24px; }
-    .hero { background:linear-gradient(135deg,#1E40AF,#3B82F6,#06B6D4); border-radius:20px; padding:56px 48px; margin-bottom:28px; position:relative; overflow:hidden; }
-    .hero h1 { font-size:42px; font-weight:800; color:#fff; margin-bottom:12px; }
-    .hero p { font-size:16px; color:rgba(255,255,255,0.85); margin-bottom:28px; }
-    .hero-search { display:flex; gap:10px; max-width:560px; }
-    .hero-search input { flex:1; padding:14px 20px; border:none; border-radius:12px; font-size:15px; outline:none; }
-    .hero-search button { padding:14px 28px; background:#fff; color:#2563EB; border:none; border-radius:12px; font-size:15px; font-weight:600; cursor:pointer; }
-    .hero-dots { position:absolute; width:200px; height:200px; border:2px dashed rgba(255,255,255,0.12); border-radius:50%; top:-60px; right:-40px; }
-    .hero-dots2 { position:absolute; width:120px; height:120px; border:2px dashed rgba(255,255,255,0.1); border-radius:50%; bottom:-30px; left:40%; }
-    .cat-row { display:flex; gap:12px; margin-bottom:28px; flex-wrap:wrap; }
-    .cat-item { display:flex; align-items:center; gap:8px; padding:10px 20px; background:#fff; border-radius:24px; cursor:pointer; font-size:14px; font-weight:500; color:#475569; text-decoration:none; box-shadow:0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s; }
-    .cat-item:hover, .cat-item.active { color:#3B82F6; background:#EFF6FF; transform:translateY(-1px); box-shadow:0 4px 12px rgba(59,130,246,0.12); }
-    .main-grid { display:grid; grid-template-columns:1fr 320px; gap:24px; }
-    .feed-card { background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); transition:all 0.2s; cursor:pointer; margin-bottom:16px; display:flex; }
-    .feed-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.08); }
-    .feed-img { width:200px; min-height:160px; background:#E2E8F0; flex-shrink:0; }
-    .feed-img img { width:100%; height:100%; object-fit:cover; }
-    .feed-body { padding:16px 20px; flex:1; display:flex; flex-direction:column; }
-    .feed-title { font-size:17px; font-weight:600; color:#1E293B; margin-bottom:6px; }
-    .feed-desc { font-size:13px; color:#64748B; line-height:1.5; margin-bottom:10px; flex:1; }
-    .feed-meta { display:flex; align-items:center; gap:16px; font-size:12px; color:#94A3B8; }
-    .feed-price { font-size:20px; font-weight:800; color:#EF4444; }
-    .sidebar-card { background:#fff; border-radius:14px; padding:20px; box-shadow:0 1px 8px rgba(0,0,0,0.04); margin-bottom:16px; }
-    .sidebar-card h3 { font-size:16px; font-weight:700; color:#1E293B; margin-bottom:16px; }
-    .hot-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #F1F5F9; cursor:pointer; text-decoration:none; color:inherit; }
-    .hot-item:last-child { border-bottom:none; }
-    .hot-item:hover { color:#3B82F6; }
-    .hot-rank { font-size:18px; font-weight:800; color:#3B82F6; width:28px; }
+    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:18px; }
+    .container { max-width:1240px; margin:0 auto; padding:24px; }
+    .hero { background:linear-gradient(135deg,#1E40AF 0%,#3B82F6 50%,#0EA5E9 100%); border-radius:20px; padding:56px 52px; margin-bottom:28px; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; width:260px; height:260px; border:2px dashed rgba(255,255,255,0.1); border-radius:50%; top:-80px; right:-40px; }
+    .hero::after { content:''; position:absolute; width:140px; height:140px; border:2px dashed rgba(255,255,255,0.08); border-radius:50%; bottom:-30px; left:35%; }
+    .hero h1 { font-size:38px; font-weight:800; color:#fff; margin-bottom:10px; position:relative; z-index:1; }
+    .hero p { font-size:15px; color:rgba(255,255,255,0.82); margin-bottom:28px; position:relative; z-index:1; }
+    .hero-search { display:flex; gap:10px; max-width:580px; position:relative; z-index:1; }
+    .hero-search input { flex:1; padding:15px 22px; border:none; border-radius:14px; font-size:15px; outline:none; box-shadow:0 4px 20px rgba(0,0,0,0.15); }
+    .hero-search button { padding:15px 32px; background:#fff; color:#2563EB; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; }
+    .hero-search button:hover { background:#F0F5FF; transform:scale(1.02); }
+
+    .cat-bar { display:flex; gap:10px; margin-bottom:26px; flex-wrap:wrap; }
+    .cat-chip { display:flex; align-items:center; gap:7px; padding:10px 22px; background:#fff; border-radius:26px; cursor:pointer; font-size:14px; font-weight:500; color:#475569; text-decoration:none; box-shadow:0 1px 4px rgba(0,0,0,0.04); transition:all 0.2s; border:1.5px solid transparent; }
+    .cat-chip:hover { border-color:#93C5FD; color:#2563EB; transform:translateY(-1px); box-shadow:0 4px 14px rgba(59,130,246,0.12); }
+    .cat-chip.active { background:#EFF6FF; border-color:#3B82F6; color:#2563EB; }
+
+    .main-grid { display:grid; grid-template-columns:1fr 330px; gap:24px; }
+    .feed-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.03); transition:all 0.25s; cursor:pointer; margin-bottom:16px; display:flex; border:1px solid #F1F5F9; }
+    .feed-card:hover { transform:translateY(-3px); box-shadow:0 8px 28px rgba(0,0,0,0.08); border-color:#DBEAFE; }
+    .feed-img { width:220px; min-height:175px; background:#E2E8F0; flex-shrink:0; overflow:hidden; }
+    .feed-img img { width:100%; height:100%; object-fit:cover; transition:transform 0.3s; }
+    .feed-card:hover .feed-img img { transform:scale(1.05); }
+    .feed-body { padding:18px 22px; flex:1; display:flex; flex-direction:column; }
+    .feed-title { font-size:17px; font-weight:600; color:#1E293B; margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+    .feed-desc { font-size:13px; color:#64748B; line-height:1.6; margin-bottom:12px; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .feed-footer { display:flex; justify-content:space-between; align-items:center; }
+    .feed-price { font-size:22px; font-weight:800; color:#EF4444; }
+    .feed-meta { font-size:12px; color:#94A3B8; display:flex; align-items:center; gap:14px; }
+
+    .side-card { background:#fff; border-radius:16px; padding:22px; box-shadow:0 1px 6px rgba(0,0,0,0.03); margin-bottom:16px; border:1px solid #F1F5F9; }
+    .side-card h3 { font-size:16px; font-weight:700; color:#1E293B; margin-bottom:16px; display:flex; align-items:center; gap:6px; }
+    .hot-row { display:flex; align-items:center; gap:10px; padding:11px 0; border-bottom:1px solid #F8FAFC; text-decoration:none; color:inherit; transition:color 0.2s; }
+    .hot-row:last-child { border-bottom:none; }
+    .hot-row:hover { color:#3B82F6; }
+    .hot-rank { font-size:18px; font-weight:800; width:26px; flex-shrink:0; }
+    .hot-rank.r1 { color:#EF4444; }
+    .hot-rank.r2 { color:#F59E0B; }
+    .hot-rank.r3 { color:#3B82F6; }
     .hot-info { flex:1; min-width:0; }
-    .hot-name { font-size:14px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .hot-price { font-size:14px; font-weight:700; color:#EF4444; }
+    .hot-name { font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .hot-views { font-size:11px; color:#94A3B8; }
+    .hot-price { font-size:15px; font-weight:700; color:#EF4444; white-space:nowrap; }
+
+    .stats-mini { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .stats-mini .box { text-align:center; padding:14px 10px; background:#F8FAFC; border-radius:12px; }
+    .stats-mini .box .val { font-size:22px; font-weight:800; }
+    .stats-mini .box .lbl { font-size:11px; color:#64748B; margin-top:2px; }
+    .publish-cta { display:block; text-align:center; padding:18px; background:linear-gradient(135deg,#10B981,#059669); color:#fff; border-radius:14px; font-size:15px; font-weight:700; transition:all 0.2s; }
+    .publish-cta:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(16,185,129,0.3); }
+
+    .footer-bar { background:#fff; border-top:1px solid #E2E8F0; margin-top:40px; padding:24px; text-align:center; }
+    .footer-bar p { font-size:12px; color:#94A3B8; line-height:1.8; }
+    .footer-bar a { color:#3B82F6; text-decoration:none; }
   </style>
 </head>
 <body>
   <div id="app">
-    <!-- 顶部导航 -->
     <div class="top-nav">
-      <div class="nav-logo">🏫 校园轻集市</div>
+      <div class="nav-logo"><span class="logo-icon">🏫</span> 校园轻集市</div>
       <div class="nav-links">
         <a href="home.html" class="active">首页</a>
         <a href="category.html">分类浏览</a>
@@ -63,52 +86,44 @@
         <a href="profile.html">个人中心</a>
       </div>
       <div class="nav-actions">
-        <el-button size="small" type="primary" onclick="location.href='login.html'">登录</el-button>
-        <el-button size="small" onclick="location.href='register.html'">注册</el-button>
+        <el-button size="default" type="primary" onclick="location.href='login.html'">登录</el-button>
+        <el-button size="default" onclick="location.href='register.html'">注册</el-button>
       </div>
     </div>
 
     <div class="container">
-      <!-- Hero -->
       <div class="hero">
-        <div class="hero-dots"></div>
-        <div class="hero-dots2"></div>
-        <h1>你的校园二手好物交易平台</h1>
-        <p>二手交易 · 失物招领 · 拼单搭子 · 跑腿委托 — 买卖更简单，生活更美好</p>
+        <h1>🎓 你的校园好物交易平台</h1>
+        <p>二手交易 · 失物招领 · 拼单搭子 · 跑腿委托 — 让校园生活更便捷、更有温度</p>
         <div class="hero-search">
-          <input type="text" placeholder="搜索你想要的校园好物..." v-model="searchText" @keyup.enter="doSearch">
+          <input type="text" placeholder="搜一搜：二手书、拼车、代取快递..." v-model="searchText" @keyup.enter="doSearch">
           <button @click="doSearch">🔍 搜索</button>
         </div>
       </div>
 
-      <!-- 分类导航 -->
-      <div class="cat-row">
-        <a href="category.html" class="cat-item active">📦 全部</a>
-        <a href="category.html?cat=secondhand" class="cat-item">🛒 二手交易</a>
-        <a href="category.html?cat=lost" class="cat-item">🔍 失物招领</a>
-        <a href="category.html?cat=group" class="cat-item">🤝 拼单搭子</a>
-        <a href="category.html?cat=errand" class="cat-item">🏃 跑腿委托</a>
+      <div class="cat-bar">
+        <a href="category.html" class="cat-chip active">📦 全部</a>
+        <a href="category.html?cat=secondhand" class="cat-chip">🛒 二手交易</a>
+        <a href="category.html?cat=lost" class="cat-chip">🔍 失物招领</a>
+        <a href="category.html?cat=group" class="cat-chip">🤝 拼单搭子</a>
+        <a href="category.html?cat=errand" class="cat-chip">🏃 跑腿委托</a>
       </div>
 
-      <!-- 主内容区 -->
       <div class="main-grid">
         <div>
-          <!-- 信息流 -->
           <div v-for="item in feedItems" :key="item.id">
             <a :href="item.link" style="text-decoration:none;color:inherit;">
               <div class="feed-card">
-                <div class="feed-img">
-                  <img :src="item.image" :alt="item.title">
-                </div>
+                <div class="feed-img"><img :src="item.image" :alt="item.title"></div>
                 <div class="feed-body">
                   <div class="feed-title">{{ item.title }}</div>
                   <div class="feed-desc">{{ item.desc }}</div>
-                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div class="feed-footer">
                     <span class="feed-price">{{ item.price }}</span>
                     <span class="feed-meta">
                       <el-tag size="small" :type="item.tagType">{{ item.tag }}</el-tag>
                       <span>📍 {{ item.location }}</span>
-                      <span>🕐 {{ item.time }}</span>
+                      <span>{{ item.time }}</span>
                     </span>
                   </div>
                 </div>
@@ -117,47 +132,37 @@
           </div>
         </div>
 
-        <!-- 侧边栏 -->
         <div>
-          <div class="sidebar-card">
+          <div class="side-card">
             <h3>🔥 热门推荐</h3>
-            <a v-for="(h,i) in hotItems" :key="i" :href="h.link" class="hot-item">
-              <span class="hot-rank">{{ i+1 }}</span>
+            <a v-for="(h,i) in hotItems" :key="i" :href="h.link" class="hot-row">
+              <span :class="['hot-rank','r'+(i+1)]">{{ i+1 }}</span>
               <span class="hot-info">
                 <div class="hot-name">{{ h.title }}</div>
-                <div style="font-size:12px;color:#94A3B8;">{{ h.views }}次浏览</div>
+                <div class="hot-views">{{ h.views }} 次浏览</div>
               </span>
               <span class="hot-price">{{ h.price }}</span>
             </a>
           </div>
 
-          <div class="sidebar-card">
+          <div class="side-card">
             <h3>📊 平台数据</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div style="text-align:center;padding:12px;background:#F8FAFC;border-radius:10px;">
-                <div style="font-size:24px;font-weight:800;color:#3B82F6;">3,420</div>
-                <div style="font-size:12px;color:#64748B;">总信息数</div>
-              </div>
-              <div style="text-align:center;padding:12px;background:#F8FAFC;border-radius:10px;">
-                <div style="font-size:24px;font-weight:800;color:#10B981;">1,256</div>
-                <div style="font-size:12px;color:#64748B;">活跃用户</div>
-              </div>
-              <div style="text-align:center;padding:12px;background:#F8FAFC;border-radius:10px;">
-                <div style="font-size:24px;font-weight:800;color:#F59E0B;">89</div>
-                <div style="font-size:12px;color:#64748B;">今日成交</div>
-              </div>
-              <div style="text-align:center;padding:12px;background:#F8FAFC;border-radius:10px;">
-                <div style="font-size:24px;font-weight:800;color:#EF4444;">48</div>
-                <div style="font-size:12px;color:#64748B;">今日上新</div>
-              </div>
+            <div class="stats-mini">
+              <div class="box"><div class="val" style="color:#3B82F6;">3,420</div><div class="lbl">总信息数</div></div>
+              <div class="box"><div class="val" style="color:#10B981;">1,256</div><div class="lbl">活跃用户</div></div>
+              <div class="box"><div class="val" style="color:#F59E0B;">89</div><div class="lbl">今日成交</div></div>
+              <div class="box"><div class="val" style="color:#EF4444;">48</div><div class="lbl">今日上新</div></div>
             </div>
           </div>
 
-          <div class="sidebar-card">
-            <a href="publish.html" style="display:block;text-align:center;padding:16px;background:linear-gradient(135deg,#10B981,#059669);color:#fff;border-radius:12px;text-decoration:none;font-size:16px;font-weight:600;">🚀 立即发布信息</a>
-          </div>
+          <a href="publish.html" class="publish-cta">🚀 立即发布信息</a>
         </div>
       </div>
+    </div>
+
+    <div class="footer-bar">
+      <p>© 2026 校园轻集市 · 为校园生活而生</p>
+      <p><a href="login.html">登录</a> · <a href="register.html">注册</a> · <a href="admin-dashboard.html">管理端</a></p>
     </div>
   </div>
 
@@ -167,21 +172,22 @@
       setup() {
         const searchText = ref('')
         const feedItems = ref([
-          { id:1, title:'九成新 iPhone 14 Pro 256G 深空黑', desc:'买了半年，一直戴壳贴膜使用，无划痕无维修，电池健康度92%，配件齐全带原装盒。', price:'¥4,200', tag:'二手', tagType:'primary', location:'校本部3号楼', time:'2小时前', image:'https://images.unsplash.com/photo-1592286927505-1def25115558?w=400&h=320&fit=crop', link:'item-detail.html' },
-          { id:2, title:'出闲置考研数学全套资料', desc:'几乎全新，只做了前几页笔记。包含高数线代概率论三门重点笔记和近五年真题解析。', price:'¥35', tag:'二手', tagType:'primary', location:'校本部5号楼', time:'3小时前', image:'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=400&h=320&fit=crop', link:'item-detail.html' },
-          { id:3, title:'东区食堂三楼拼奶茶 还差2人', desc:'霸王茶姬新品，5个人拼有6折优惠，目前已有3人，还差2人！周五下午一起去喝。', price:'人均¥18', tag:'拼单', tagType:'success', location:'东区食堂', time:'30分钟前', image:'https://images.unsplash.com/photo-1558857563-b371033873b8?w=400&h=320&fit=crop', link:'group-detail.html' },
-          { id:4, title:'求帮取快递到6栋宿舍', desc:'中通快递，在西门菜鸟驿站，是一件羽绒服不重但体积有点大。送到6栋楼下就行。', price:'酬谢¥5', tag:'跑腿', tagType:'warning', location:'西门菜鸟驿站', time:'1小时前', image:'https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=400&h=320&fit=crop', link:'task-detail.html' },
-          { id:5, title:'拾到校园卡一张 请失主联系', desc:'今晚在图书馆二楼自习室捡到的，卡号尾号8832，请失主看到后尽快联系核实。', price:'-', tag:'招领', tagType:'info', location:'图书馆二楼', time:'45分钟前', image:'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=400&h=320&fit=crop', link:'lost-detail.html' },
-          { id:6, title:'Cherry MX 青轴机械键盘 毕业出', desc:'87键RGB背光，手感清脆利落。使用一年半正常痕迹，包装盒配件齐全。', price:'¥150', tag:'二手', tagType:'primary', location:'校本部2号楼', time:'5小时前', image:'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400&h=320&fit=crop', link:'item-detail.html' },
-          { id:7, title:'西门打印店附近丢失黑色耳机盒', desc:'AirPods Pro 的充电盒，黑色硅胶保护套，上面贴了一个猫爪贴纸。今天下午两点左右丢的。', price:'-', tag:'失物', tagType:'danger', location:'西门打印店', time:'4小时前', image:'https://images.unsplash.com/photo-1606841837239-c5a1a4a07afc?w=400&h=320&fit=crop', link:'lost-detail.html' },
-          { id:8, title:'周五晚上拼车去高铁站', desc:'周五晚上7点出发，从校本部南门到高铁站，车型舒适五座，3个空位，每人30元。', price:'¥30/人', tag:'拼单', tagType:'success', location:'校本部南门', time:'6小时前', image:'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400&h=320&fit=crop', link:'group-detail.html' },
+          { id:1, title:'九成新 iPhone 14 Pro 256G 深空黑', desc:'国行正品，戴壳贴膜使用半年，电池健康度92%，无划痕无维修，配件齐全带盒。', price:'¥4,200', tag:'二手', tagType:'primary', location:'校本部3号楼', time:'2小时前', image:'https://images.unsplash.com/photo-1592286927505-1def25115558?w=440&h=350&fit=crop', link:'item-detail.html' },
+          { id:2, title:'出闲置考研数学全套资料 几乎全新', desc:'高数线代概率论三门重点笔记加近五年真题解析，只做了前几页笔记，字迹工整。', price:'¥35', tag:'二手', tagType:'primary', location:'校本部5号楼', time:'3小时前', image:'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=440&h=350&fit=crop', link:'item-detail.html' },
+          { id:3, title:'东区食堂三楼霸王茶姬拼奶茶 还差2人！', desc:'5人拼享6折优惠，目前已有3人确认，人均约18元，今天下午5点集合一起去买。', price:'人均¥18', tag:'拼单', tagType:'success', location:'东区食堂', time:'30分钟前', image:'https://images.unsplash.com/photo-1558857563-b371033873b8?w=440&h=350&fit=crop', link:'group-detail.html' },
+          { id:4, title:'求帮取中通快递到6栋宿舍 酬谢5元', desc:'西门菜鸟驿站中通快递，一件羽绒服体积略大但不重，送到6栋楼下联系我即可。', price:'酬谢¥5', tag:'跑腿', tagType:'warning', location:'西门菜鸟驿站', time:'1小时前', image:'https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=440&h=350&fit=crop', link:'task-detail.html' },
+          { id:5, title:'拾到校园卡一张 尾号8832 请失主联系', desc:'今晚在图书馆二楼自习室拾到，请失主看到后尽快联系核实身份取回。', price:'-', tag:'招领', tagType:'info', location:'图书馆二楼', time:'45分钟前', image:'https://images.unsplash.com/photo-1567427017947-545c5f8d16ad?w=440&h=350&fit=crop', link:'lost-detail.html' },
+          { id:6, title:'Cherry MX 青轴机械键盘 87键RGB', desc:'使用一年半，手感清脆利落，RGB背光正常，包装盒和配件都在，毕业出闲置。', price:'¥150', tag:'二手', tagType:'primary', location:'校本部2号楼', time:'5小时前', image:'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=440&h=350&fit=crop', link:'item-detail.html' },
+          { id:7, title:'西门打印店附近丢失黑色耳机盒', desc:'AirPods Pro充电盒，黑色硅胶保护套上有猫爪贴纸，今天下午两点左右丢失。', price:'酬谢¥50', tag:'失物', tagType:'danger', location:'西门打印店', time:'4小时前', image:'https://images.unsplash.com/photo-1606841837239-c5a1a4a07afc?w=440&h=350&fit=crop', link:'lost-detail.html' },
+          { id:8, title:'周五晚上拼车去高铁站 ¥30/人', desc:'周五晚7点校本部南门出发，舒适五座车3个空位，准时出发行李可带。', price:'¥30/人', tag:'拼单', tagType:'success', location:'校本部南门', time:'6小时前', image:'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=440&h=350&fit=crop', link:'group-detail.html' },
         ])
         const hotItems = ref([
-          { title:'二手自行车 九成新', price:'¥200', views:328, link:'item-detail.html' },
-          { title:'戴尔24寸2K显示器', price:'¥600', views:267, link:'item-detail.html' },
-          { title:'Kindle Paperwhite 4', price:'¥400', views:432, link:'item-detail.html' },
-          { title:'宿舍小冰箱 50L', price:'¥300', views:512, link:'item-detail.html' },
-          { title:'吉他 Yamaha F310', price:'¥450', views:201, link:'item-detail.html' },
+          { title:'二手自行车 九成新凤凰牌', price:'¥200', views:328, link:'item-detail.html' },
+          { title:'Dell 24寸 2K IPS 显示器', price:'¥600', views:267, link:'item-detail.html' },
+          { title:'Kindle Paperwhite 4 国行', price:'¥400', views:432, link:'item-detail.html' },
+          { title:'宿舍小冰箱 50L 静音省电', price:'¥300', views:512, link:'item-detail.html' },
+          { title:'吉他 Yamaha F310 入门', price:'¥450', views:201, link:'item-detail.html' },
+          { title:'悍马健身卡 剩余8个月', price:'¥240', views:176, link:'item-detail.html' },
         ])
         function doSearch() {
           if (searchText.value) location.href = 'category.html?q=' + encodeURIComponent(searchText.value)
@@ -191,6 +197,6 @@
     })
     app.use(ElementPlus)
     app.mount('#app')
-</script>
+  </script>
 </body>
 </html>

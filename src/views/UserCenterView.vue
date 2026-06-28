@@ -1,207 +1,92 @@
 <script setup lang="ts">
 import { useMarketStore } from '@/stores/market'
 import { useRouter } from 'vue-router'
+import { computed } from 'vue'
 
 const store = useMarketStore()
 const router = useRouter()
 
-function goToPublish() {
-  router.push('/publish')
-}
+const stats = computed(() => [
+  { label: '我的发布', value: store.myProducts.length, color: '#3b82f6' },
+  { label: '我的收藏', value: 12, color: '#10b981' },
+  { label: '总浏览量', value: store.myProducts.reduce((s, p) => s + p.views, 0), color: '#f59e0b' },
+  { label: '已成交', value: 2, color: '#ef4444' },
+])
+
+const activities = [
+  { text: '你发布的"二手自行车"收到一条新消息', time: '30分钟前', color: '#10b981' },
+  { text: '"机械键盘"被李同学收藏', time: '2小时前', color: '#3b82f6' },
+  { text: '你的"床上折叠桌"已有89次浏览', time: '5小时前', color: '#f59e0b' },
+  { text: '你发布了新商品"Kindle Paperwhite 4"', time: '3天前', color: '#94a3b8' },
+]
 </script>
 
 <template>
-  <div class="user-page">
-    <div class="page-header">
-      <h2>👤 个人中心</h2>
-      <p class="page-subtitle">管理你的资料、发布和收藏</p>
+  <div class="page">
+    <div class="profile-card">
+      <div class="banner" />
+      <div class="profile-info">
+        <div class="avt-wrap"><img :src="store.userInfo.avatar" alt="" /></div>
+        <div class="user-text">
+          <div class="user-name">{{ store.userInfo.name }} <el-tag size="small" type="success">✅ 已认证</el-tag></div>
+          <div class="user-sign">{{ store.userInfo.signature }} · {{ store.userInfo.college }}</div>
+          <div class="user-detail">
+            <span>📱 {{ store.userInfo.phone }}</span><span>🏫 {{ store.userInfo.campus }}</span><span>🏠 {{ store.userInfo.dorm }}</span><span>⭐ 信用良好</span>
+          </div>
+        </div>
+        <el-button @click="router.push('/profile')">✏️ 编辑资料</el-button>
+      </div>
     </div>
 
-    <div class="user-card">
-      <div class="user-banner"></div>
-      <div class="user-info">
-        <div class="user-avatar">
-          <img v-if="store.userInfo.avatar" :src="store.userInfo.avatar" class="avatar-img" />
-          <span v-else class="avatar-placeholder">{{ store.userInfo.name.slice(0, 1) }}</span>
-        </div>
-        <div class="user-details">
-          <h3 class="user-name">{{ store.userInfo.name }}</h3>
-          <p class="user-signature">{{ store.userInfo.signature || '这个人很懒，什么都没写~' }}</p>
-        </div>
+    <div class="stats-row">
+      <div v-for="s in stats" :key="s.label" class="stat-card">
+        <div class="stat-num" :style="{ color: s.color }">{{ s.value }}</div>
+        <div class="stat-label">{{ s.label }}</div>
       </div>
     </div>
 
     <div class="menu-grid">
-      <div class="menu-item" @click="goToPublish">
-        <span class="menu-icon">📝</span>
-        <span class="menu-label">我的发布</span>
-      </div>
-      <div class="menu-item">
-        <span class="menu-icon">⭐</span>
-        <span class="menu-label">我的收藏</span>
-      </div>
-      <div class="menu-item">
-        <span class="menu-icon">📊</span>
-        <span class="menu-label">浏览记录</span>
-      </div>
-      <div class="menu-item">
-        <span class="menu-icon">⚙️</span>
-        <span class="menu-label">账号设置</span>
-      </div>
+      <div class="menu-item" @click="router.push('/profile')"><span class="menu-icon">📋</span><span class="menu-label">我的发布</span></div>
+      <div class="menu-item"><span class="menu-icon">⭐</span><span class="menu-label">我的收藏</span></div>
+      <div class="menu-item" @click="router.push('/message')"><span class="menu-icon">💬</span><span class="menu-label">我的消息</span></div>
+      <div class="menu-item"><span class="menu-icon">⚙️</span><span class="menu-label">账号设置</span></div>
     </div>
 
-    <div class="empty-hint">
-      <span class="empty-icon">🔧</span>
-      <p>个人中心功能将在后续开发中完善</p>
+    <div class="activity-card">
+      <h3>📌 最近动态</h3>
+      <div v-for="(a, i) in activities" :key="i" class="act-item">
+        <div class="act-dot" :style="{ background: a.color }" />
+        <div class="act-text">{{ a.text }}</div><span class="act-time">{{ a.time }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.user-page {
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.page-header {
-  margin-bottom: 24px;
-}
-
-.page-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 8px;
-}
-
-.page-subtitle {
-  font-size: 14px;
-  color: #64748b;
-  margin: 0;
-}
-
-.user-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
-  overflow: hidden;
-  margin-bottom: 28px;
-}
-
-.user-banner {
-  height: 120px;
-  background: linear-gradient(135deg, #f97316, #ea580c);
-}
-
-.user-info {
-  display: flex;
-  align-items: flex-end;
-  gap: 20px;
-  padding: 0 28px 24px;
-  margin-top: -50px;
-}
-
-.user-avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 4px solid #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  overflow: hidden;
-  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.avatar-placeholder {
-  font-size: 42px;
-  font-weight: 700;
-  color: #f97316;
-}
-
-.user-details {
-  padding-bottom: 8px;
-}
-
-.user-name {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 4px;
-}
-
-.user-signature {
-  font-size: 13px;
-  color: #64748b;
-  margin: 0;
-}
-
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 28px;
-}
-
-.menu-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 24px 16px;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.menu-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-}
-
-.menu-icon {
-  font-size: 32px;
-}
-
-.menu-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.empty-hint {
-  text-align: center;
-  padding: 60px 20px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
-}
-
-.empty-icon {
-  font-size: 48px;
-  display: block;
-  margin-bottom: 12px;
-}
-
-.empty-hint p {
-  font-size: 15px;
-  color: #64748b;
-  margin: 0;
-}
-
-@media (max-width: 768px) {
-  .menu-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+.page { max-width: 1040px; margin: 0 auto; }
+.profile-card { background: #fff; border-radius: 18px; box-shadow: 0 1px 8px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 24px; border: 1px solid #f1f5f9; }
+.banner { height: 140px; background: linear-gradient(135deg, #f97316, #ea580c); }
+.profile-info { display: flex; align-items: flex-end; gap: 24px; padding: 0 30px 26px; margin-top: -60px; }
+.avt-wrap { width: 104px; height: 104px; border-radius: 50%; border: 5px solid #fff; box-shadow: 0 4px 14px rgba(0,0,0,0.12); overflow: hidden; background: #e2e8f0; flex-shrink: 0; }
+.avt-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.user-text { padding-bottom: 8px; flex: 1; }
+.user-name { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.user-sign { font-size: 13px; color: #64748b; margin-bottom: 6px; }
+.user-detail { font-size: 13px; color: #475569; display: flex; gap: 18px; flex-wrap: wrap; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: #fff; border-radius: 16px; padding: 22px; text-align: center; box-shadow: 0 1px 6px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
+.stat-num { font-size: 30px; font-weight: 800; }
+.stat-label { font-size: 12px; color: #64748b; margin-top: 4px; }
+.menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.menu-item { background: #fff; border-radius: 16px; padding: 26px; text-align: center; cursor: pointer; box-shadow: 0 1px 6px rgba(0,0,0,0.03); transition: all 0.25s; border: 1px solid #f1f5f9; }
+.menu-item:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: #dbeafe; }
+.menu-icon { font-size: 36px; display: block; margin-bottom: 8px; }
+.menu-label { font-size: 14px; font-weight: 600; }
+.activity-card { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 1px 6px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
+.activity-card h3 { font-size: 17px; font-weight: 700; margin: 0 0 16px; }
+.act-item { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid #f8fafc; }
+.act-item:last-child { border-bottom: none; }
+.act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.act-text { flex: 1; font-size: 13px; }
+.act-time { font-size: 11px; color: #94a3b8; }
 </style>

@@ -1,127 +1,55 @@
 <script setup lang="ts">
-const errandTypes = [
-  { icon: '📦', label: '代取快递', desc: '没空取快递？找人代拿' },
-  { icon: '🍱', label: '代买饭菜', desc: '不想出门？帮忙带饭' },
-  { icon: '📋', label: '代办事务', desc: '打印文件、交材料等' },
-  { icon: '🏃', label: '校园跑腿', desc: '教学楼、宿舍楼之间速递' },
-]
+import { useMarketStore } from '@/stores/market'
+import { ElMessage } from 'element-plus'
+
+const store = useMarketStore()
+
+function takeTask(e: typeof store.errandTasks[0]) {
+  ElMessage.success('✅ 接单成功！请及时联系发布者确认取件信息。')
+}
 </script>
 
 <template>
-  <div class="errand-page">
-    <div class="page-header">
-      <h2>🏃 跑腿委托</h2>
-      <p class="page-subtitle">发布跑腿任务，找人帮你办事</p>
-    </div>
-
-    <div class="type-grid">
-      <div v-for="t in errandTypes" :key="t.label" class="type-card">
-        <span class="type-icon">{{ t.icon }}</span>
-        <h3 class="type-label">{{ t.label }}</h3>
-        <p class="type-desc">{{ t.desc }}</p>
+  <div class="page">
+    <div class="page-hd"><h2>🏃 跑腿委托</h2><p class="sub">发布跑腿任务，找人帮你办事</p></div>
+    <div class="grid">
+      <div v-for="e in store.errandTasks" :key="e.id" class="card">
+        <div class="card-img"><img :src="e.image" :alt="e.title" /></div>
+        <div class="card-body">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <el-tag type="warning" size="small">{{ e.type }}</el-tag>
+            <el-tag size="small" :type="e.status === '待接单' ? 'warning' : 'success'">{{ e.status }}</el-tag>
+          </div>
+          <div class="card-title">{{ e.title }}</div>
+          <div class="card-desc">{{ e.desc }}</div>
+          <div class="reward-card"><div class="reward-amt">¥{{ e.reward }}.00</div><div class="reward-label">任务报酬</div></div>
+          <div class="card-meta">
+            <div>📍 {{ e.fromAddr }} → 🏠 {{ e.toAddr }}</div>
+            <div>⏰ {{ e.deadline }}</div>
+          </div>
+          <el-button type="warning" style="width:100%;margin-top:12px;" @click="takeTask(e)">✋ 我要接单</el-button>
+        </div>
       </div>
-    </div>
-
-    <div class="empty-hint">
-      <span class="empty-icon">🚀</span>
-      <p>跑腿任务列表将在后续开发中接入数据</p>
+      <el-empty v-if="store.errandTasks.length === 0" description="暂无委托任务" />
     </div>
   </div>
 </template>
 
 <style scoped>
-.errand-page {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.page-header {
-  margin-bottom: 24px;
-}
-
-.page-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 8px;
-}
-
-.page-subtitle {
-  font-size: 14px;
-  color: #64748b;
-  margin: 0;
-}
-
-.type-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.type-card {
-  text-align: center;
-  padding: 28px 16px;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-}
-
-.type-card:nth-child(1):hover { border-bottom-color: #f59e0b; }
-.type-card:nth-child(2):hover { border-bottom-color: #ef4444; }
-.type-card:nth-child(3):hover { border-bottom-color: #8b5cf6; }
-.type-card:nth-child(4):hover { border-bottom-color: #3b82f6; }
-
-.type-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-}
-
-.type-icon {
-  font-size: 40px;
-  display: block;
-  margin-bottom: 12px;
-}
-
-.type-label {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 6px;
-}
-
-.type-desc {
-  font-size: 13px;
-  color: #64748b;
-  margin: 0;
-}
-
-.empty-hint {
-  text-align: center;
-  padding: 80px 20px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
-}
-
-.empty-icon {
-  font-size: 64px;
-  display: block;
-  margin-bottom: 16px;
-}
-
-.empty-hint p {
-  font-size: 15px;
-  color: #64748b;
-  margin: 0;
-}
-
-@media (max-width: 768px) {
-  .type-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+.page { max-width: 1200px; margin: 0 auto; }
+.page-hd { margin-bottom: 24px; }
+.page-hd h2 { font-size: 24px; font-weight: 700; margin: 0 0 8px; }
+.sub { font-size: 14px; color: #64748b; margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; }
+.card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; transition: all 0.25s; }
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+.card-img { height: 160px; overflow: hidden; background: #e2e8f0; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; }
+.card-body { padding: 18px; }
+.card-title { font-size: 16px; font-weight: 600; margin: 8px 0 6px; }
+.card-desc { font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 10px; }
+.reward-card { text-align: center; padding: 14px; background: linear-gradient(135deg,#fff7ed,#fed7aa); border-radius: 12px; margin-bottom: 10px; }
+.reward-amt { font-size: 28px; font-weight: 800; color: #d97706; }
+.reward-label { font-size: 12px; color: #92400e; }
+.card-meta { font-size: 12px; color: #94a3b8; line-height: 1.6; }
 </style>

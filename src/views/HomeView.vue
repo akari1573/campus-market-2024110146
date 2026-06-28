@@ -1,399 +1,149 @@
 <script setup lang="ts">
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMarketStore } from '@/stores/market'
-import { computed } from 'vue'
 
 const router = useRouter()
 const store = useMarketStore()
+const searchText = ref('')
 
-const stats = computed(() => [
-  { label: '商品总数', value: store.products.length, icon: '📦', color: '#3b82f6' },
-  { label: '今日上新', value: store.products.filter(p => p.publishTime === new Date().toISOString().slice(0, 10)).length || 48, icon: '🆕', color: '#10b981' },
-  { label: '活跃用户', value: 1256, icon: '👥', color: '#f59e0b' },
-  { label: '未读消息', value: store.unreadCount, icon: '💬', color: '#ef4444' },
+const feedItems = computed(() => [
+  ...store.products.slice(0, 4).map(p => ({ ...p, link: `/detail/${p.id}`, time: p.publishTime, priceStr: '¥' + p.price })),
+  ...store.groupBuys.slice(0, 2).map(g => ({ ...g, link: `/group-buy`, time: g.publishTime, priceStr: g.price, desc: g.desc, location: g.location, tag: '拼单', tagType: 'success' })),
+  ...store.errandTasks.slice(0, 1).map(e => ({ ...e, link: `/errand`, time: e.publishTime, priceStr: '酬谢¥' + e.reward, tag: '跑腿', tagType: 'warning', location: e.toAddr })),
+  ...store.lostFounds.slice(0, 1).map(l => ({ ...l, link: `/lost-found`, time: l.publishTime, priceStr: l.reward || '-', tag: l.type === 'lost' ? '失物' : '招领', tagType: l.type === 'lost' ? 'danger' : 'info' })),
 ])
 
-const features = [
-  { icon: '🛒', title: '海量好物', desc: '二手书籍、数码产品、生活用品，应有尽有' },
-  { icon: '💰', title: '超值价格', desc: '学长学姐毕业甩卖，价格实惠，物超所值' },
-  { icon: '📍', title: '同校交易', desc: '无需快递，校内当面交易，安全便捷' },
-  { icon: '🔒', title: '实名认证', desc: '校园身份认证，买卖双方真实可信' },
-]
+const hotItems = computed(() => store.products.slice(0, 6).map(p => ({ ...p, priceStr: '¥' + p.price })))
+const stats = computed(() => ({ total: store.products.length + store.lostFounds.length + store.groupBuys.length + store.errandTasks.length, users: 1256, deals: 89, today: 48 }))
 
-function goToList() {
-  router.push('/list')
-}
-function goToPublish() {
-  router.push('/publish')
-}
+function doSearch() { if (searchText.value) router.push(`/list?q=${encodeURIComponent(searchText.value)}`) }
 </script>
 
 <template>
   <div class="home">
-    <section class="hero">
-      <div class="hero-bg">
-        <div class="hero-circle c1"></div>
-        <div class="hero-circle c2"></div>
-        <div class="hero-circle c3"></div>
-        <div class="hero-circle c4"></div>
-        <div class="hero-dot d1"></div>
-        <div class="hero-dot d2"></div>
-        <div class="hero-dot d3"></div>
-        <div class="hero-dot d4"></div>
-        <div class="hero-dot d5"></div>
-      </div>
-      <div class="hero-content">
-        <div class="hero-badge">🏫 校园专属交易平台</div>
-        <h1 class="hero-title">校园轻集市</h1>
-        <p class="hero-subtitle">
-          你的校园二手好物交易平台<br />
-          买卖更简单，生活更美好
-        </p>
-        <div class="hero-actions">
-          <button class="btn-primary" @click="goToList">🚀 立即淘好物</button>
-          <button class="btn-outline" @click="goToPublish">📝 发布商品</button>
+    <div class="container">
+      <!-- Hero -->
+      <div class="hero">
+        <h1>🎓 你的校园好物交易平台</h1>
+        <p>二手交易 · 失物招领 · 拼单搭子 · 跑腿委托 — 让校园生活更便捷、更有温度</p>
+        <div class="hero-search">
+          <input type="text" v-model="searchText" placeholder="搜一搜：二手书、拼车、代取快递..." @keyup.enter="doSearch" />
+          <button @click="doSearch">🔍 搜索</button>
         </div>
       </div>
-    </section>
 
-    <section class="stats-section">
-      <div v-for="s in stats" :key="s.label" class="stat-item">
-        <span class="stat-icon">{{ s.icon }}</span>
-        <span class="stat-num" :style="{ color: s.color }">{{ s.value }}</span>
-        <span class="stat-label">{{ s.label }}</span>
+      <!-- Category Chips -->
+      <div class="cat-bar">
+        <router-link to="/list" class="cat-chip active">📦 全部</router-link>
+        <router-link to="/trade" class="cat-chip">🛒 二手交易</router-link>
+        <router-link to="/lost-found" class="cat-chip">🔍 失物招领</router-link>
+        <router-link to="/group-buy" class="cat-chip">🤝 拼单搭子</router-link>
+        <router-link to="/errand" class="cat-chip">🏃 跑腿委托</router-link>
       </div>
-    </section>
 
-    <section class="features-section">
-      <h2 class="section-title">为什么选择校园轻集市？</h2>
-      <div class="features-grid">
-        <div v-for="f in features" :key="f.title" class="feature-card">
-          <span class="feature-icon">{{ f.icon }}</span>
-          <h3 class="feature-title">{{ f.title }}</h3>
-          <p class="feature-desc">{{ f.desc }}</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="hot-section">
-      <h2 class="section-title">🔥 热门推荐</h2>
-      <div class="hot-grid">
-        <div
-          v-for="p in store.products.slice(0, 4)"
-          :key="p.id"
-          class="hot-card"
-          @click="router.push(`/detail/${p.id}`)"
-        >
-          <div class="hot-img-box">
-            <img v-if="p.image" :src="p.image" class="hot-img" />
-            <span v-else class="hot-placeholder">{{ p.title.slice(0, 2) }}</span>
-          </div>
-          <div class="hot-info">
-            <span class="hot-title">{{ p.title }}</span>
-            <span class="hot-price">¥{{ p.price }}</span>
+      <div class="main-grid">
+        <div>
+          <div v-for="item in feedItems" :key="item.id" class="feed-card" @click="router.push(item.link)">
+            <div class="feed-img"><img :src="item.image" :alt="item.title" /></div>
+            <div class="feed-body">
+              <div class="feed-title">{{ item.title }}</div>
+              <div class="feed-desc">{{ item.desc }}</div>
+              <div class="feed-footer">
+                <span class="feed-price">{{ item.priceStr }}</span>
+                <span class="feed-meta">
+                  <el-tag size="small" :type="item.tagType">{{ item.tag }}</el-tag>
+                  <span v-if="item.location">📍 {{ item.location }}</span>
+                  <span>{{ item.time }}</span>
+                </span>
+              </div>
+            </div>
           </div>
         </div>
+
+        <div>
+          <div class="side-card">
+            <h3>🔥 热门推荐</h3>
+            <router-link v-for="(h, i) in hotItems" :key="h.id" :to="`/detail/${h.id}`" class="hot-row">
+              <span :class="['hot-rank', `r${i + 1}`]">{{ i + 1 }}</span>
+              <span class="hot-info"><div class="hot-name">{{ h.title }}</div><div class="hot-views">{{ h.views }} 次浏览</div></span>
+              <span class="hot-price">{{ h.priceStr }}</span>
+            </router-link>
+          </div>
+          <div class="side-card">
+            <h3>📊 平台数据</h3>
+            <div class="stats-mini">
+              <div class="box"><div class="val" style="color:#3b82f6;">{{ stats.total }}</div><div class="lbl">总信息数</div></div>
+              <div class="box"><div class="val" style="color:#10b981;">{{ stats.users }}</div><div class="lbl">活跃用户</div></div>
+              <div class="box"><div class="val" style="color:#f59e0b;">{{ stats.deals }}</div><div class="lbl">今日成交</div></div>
+              <div class="box"><div class="val" style="color:#ef4444;">{{ stats.today }}</div><div class="lbl">今日上新</div></div>
+            </div>
+          </div>
+          <router-link to="/publish" class="publish-cta">🚀 立即发布信息</router-link>
+        </div>
       </div>
-    </section>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.home {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
+.home { max-width: 1200px; margin: 0 auto; }
+.container { max-width: 1240px; margin: 0 auto; }
 .hero {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-  border-radius: 20px;
-  padding: 60px 48px;
-  margin-bottom: 32px;
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #0ea5e9 100%);
+  border-radius: 20px; padding: 56px 52px; margin-bottom: 28px; position: relative; overflow: hidden;
 }
+.hero h1 { font-size: 38px; font-weight: 800; color: #fff; margin: 0 0 10px; }
+.hero p { font-size: 15px; color: rgba(255,255,255,0.82); margin: 0 0 28px; }
+.hero-search { display: flex; gap: 10px; max-width: 580px; }
+.hero-search input { flex: 1; padding: 15px 22px; border: none; border-radius: 14px; font-size: 15px; outline: none; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+.hero-search button { padding: 15px 32px; background: #fff; color: #2563eb; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
 
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+.cat-bar { display: flex; gap: 10px; margin-bottom: 26px; flex-wrap: wrap; }
+.cat-chip {
+  display: flex; align-items: center; gap: 7px; padding: 10px 22px; background: #fff; border-radius: 26px; cursor: pointer;
+  font-size: 14px; font-weight: 500; color: #475569; text-decoration: none; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: all 0.2s; border: 1.5px solid transparent;
 }
+.cat-chip:hover, .cat-chip.active { border-color: #93c5fd; color: #2563eb; background: #eff6ff; }
 
-.hero-circle {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.08;
-  background: #fff;
+.main-grid { display: grid; grid-template-columns: 1fr 330px; gap: 24px; }
+
+.feed-card {
+  background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+  transition: all 0.25s; cursor: pointer; margin-bottom: 16px; display: flex; border: 1px solid #f1f5f9;
 }
+.feed-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.08); border-color: #dbeafe; }
+.feed-img { width: 220px; min-height: 175px; background: #e2e8f0; flex-shrink: 0; overflow: hidden; }
+.feed-img img { width: 100%; height: 100%; object-fit: cover; }
+.feed-body { padding: 18px 22px; flex: 1; display: flex; flex-direction: column; }
+.feed-title { font-size: 17px; font-weight: 600; color: #1e293b; margin-bottom: 6px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.feed-desc { font-size: 13px; color: #64748b; line-height: 1.6; margin-bottom: 12px; flex: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.feed-footer { display: flex; justify-content: space-between; align-items: center; }
+.feed-price { font-size: 22px; font-weight: 800; color: #ef4444; }
+.feed-meta { font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 14px; }
 
-.c1 { width: 300px; height: 300px; top: -80px; right: -60px; }
-.c2 { width: 200px; height: 200px; bottom: -40px; left: -40px; }
-.c3 { width: 120px; height: 120px; top: 40px; left: 50%; }
-.c4 { width: 80px; height: 80px; bottom: 60px; right: 40%; }
+.side-card { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 1px 6px rgba(0,0,0,0.03); margin-bottom: 16px; border: 1px solid #f1f5f9; }
+.side-card h3 { font-size: 16px; font-weight: 700; color: #1e293b; margin: 0 0 16px; display: flex; align-items: center; gap: 6px; }
+.hot-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #f8fafc; text-decoration: none; color: inherit; transition: color 0.2s; }
+.hot-row:last-child { border-bottom: none; }
+.hot-row:hover { color: #3b82f6; }
+.hot-rank { font-size: 18px; font-weight: 800; width: 26px; flex-shrink: 0; }
+.hot-rank.r1 { color: #ef4444; } .hot-rank.r2 { color: #f59e0b; } .hot-rank.r3 { color: #3b82f6; }
+.hot-info { flex: 1; min-width: 0; }
+.hot-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hot-views { font-size: 11px; color: #94a3b8; }
+.hot-price { font-size: 15px; font-weight: 700; color: #ef4444; white-space: nowrap; }
 
-.hero-dot {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.18);
+.stats-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stats-mini .box { text-align: center; padding: 14px 10px; background: #f8fafc; border-radius: 12px; }
+.stats-mini .box .val { font-size: 22px; font-weight: 800; }
+.stats-mini .box .lbl { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+.publish-cta {
+  display: block; text-align: center; padding: 18px; background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff; border-radius: 14px; font-size: 15px; font-weight: 700; text-decoration: none;
+  transition: all 0.2s;
 }
-
-.d1 { top: 60px; left: 100px; }
-.d2 { top: 100px; right: 200px; }
-.d3 { bottom: 80px; left: 300px; }
-.d4 { bottom: 40px; right: 120px; }
-.d5 { top: 50%; left: 40px; }
-
-.hero-content {
-  position: relative;
-  z-index: 1;
-}
-
-.hero-badge {
-  display: inline-block;
-  background: rgba(255,255,255,0.18);
-  backdrop-filter: blur(8px);
-  color: #fff;
-  padding: 6px 20px;
-  border-radius: 20px;
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-
-.hero-title {
-  font-size: 52px;
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 16px;
-  letter-spacing: 4px;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
-}
-
-.hero-subtitle {
-  font-size: 18px;
-  color: rgba(255,255,255,0.9);
-  margin: 0 0 32px;
-  line-height: 1.8;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 16px;
-}
-
-.btn-primary {
-  padding: 14px 32px;
-  background: #fff;
-  color: #2563eb;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-}
-
-.btn-outline {
-  padding: 14px 32px;
-  background: transparent;
-  color: #fff;
-  border: 2px solid rgba(255,255,255,0.5);
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
-}
-
-.btn-outline:hover {
-  background: rgba(255,255,255,0.12);
-  border-color: #fff;
-}
-
-.stats-section {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 40px;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px 16px;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
-  border-top: 3px solid transparent;
-}
-
-.stat-item:nth-child(1) { border-top-color: #3b82f6; }
-.stat-item:nth-child(2) { border-top-color: #10b981; }
-.stat-item:nth-child(3) { border-top-color: #f59e0b; }
-.stat-item:nth-child(4) { border-top-color: #ef4444; }
-
-.stat-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-}
-
-.stat-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
-}
-
-.stat-num {
-  font-size: 30px;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: #64748b;
-}
-
-.section-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 24px;
-  text-align: center;
-}
-
-.features-section {
-  margin-bottom: 40px;
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-
-.feature-card {
-  text-align: center;
-  padding: 32px 20px;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
-  border-bottom: 3px solid transparent;
-}
-
-.feature-card:nth-child(1):hover { border-bottom-color: #3b82f6; }
-.feature-card:nth-child(2):hover { border-bottom-color: #10b981; }
-.feature-card:nth-child(3):hover { border-bottom-color: #f59e0b; }
-.feature-card:nth-child(4):hover { border-bottom-color: #ef4444; }
-
-.feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-}
-
-.feature-icon {
-  font-size: 44px;
-  display: block;
-  margin-bottom: 12px;
-}
-
-.feature-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 8px;
-}
-
-.feature-desc {
-  font-size: 13px;
-  color: #64748b;
-  line-height: 1.6;
-  margin: 0;
-}
-
-.hot-section {
-  padding-bottom: 40px;
-}
-
-.hot-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-}
-
-.hot-card {
-  background: #fff;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.hot-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-}
-
-.hot-img-box {
-  height: 160px;
-  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hot-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hot-placeholder {
-  font-size: 36px;
-  color: #94a3b8;
-  font-weight: 700;
-}
-
-.hot-info {
-  padding: 14px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.hot-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
-  margin-right: 8px;
-}
-
-.hot-price {
-  font-size: 16px;
-  font-weight: 700;
-  color: #ef4444;
-  white-space: nowrap;
-}
-
-@media (max-width: 768px) {
-  .hero { padding: 40px 24px; }
-  .hero-title { font-size: 32px; }
-  .stats-section { grid-template-columns: repeat(2, 1fr); }
-  .features-grid { grid-template-columns: repeat(2, 1fr); }
-  .hot-grid { grid-template-columns: repeat(2, 1fr); }
-  .hero-actions { flex-direction: column; }
-}
+.publish-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); }
 </style>

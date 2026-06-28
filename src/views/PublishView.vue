@@ -85,6 +85,8 @@ function submitPublish() {
     contact: form.value.contact.trim(),
     image: form.value.image,
     publisherId: store.currentUserId,
+    tag: '二手',
+    tagType: 'primary',
   })
 
   ElMessage.success('🎉 商品发布成功！')

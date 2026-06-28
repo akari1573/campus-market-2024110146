@@ -28,6 +28,7 @@ function sendReply() {
     content: replyText.value.trim(),
     productTitle: selectedMessage.value.productTitle,
     unread: false,
+    avatar: store.userInfo.avatar,
   })
   ElMessage.success('回复已发送')
   replyText.value = ''
@@ -47,6 +48,7 @@ function refreshMessages() {
     content: randomMsg,
     productTitle: '二手自行车',
     unread: true,
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
   })
   ElMessage.success('📩 收到一条新消息！')
 }

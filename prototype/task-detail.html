@@ -10,103 +10,106 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; }
-    .top-nav { display:flex; align-items:center; padding:0 24px; height:60px; background:#fff; box-shadow:0 1px 12px rgba(0,0,0,0.04); position:sticky; top:0; z-index:100; border-bottom:1px solid #F1F5F9; }
-    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; }
-    .nav-links { display:flex; gap:4px; }
-    .nav-links a { text-decoration:none; color:#475569; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#F1F5F9; color:#1E293B; }
+    a { text-decoration:none; }
+    .top-nav { display:flex; align-items:center; padding:0 28px; height:64px; background:#fff; position:sticky; top:0; z-index:100; border-bottom:1px solid #E2E8F0; box-shadow:0 1px 12px rgba(0,0,0,0.03); }
+    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; display:flex; align-items:center; gap:6px; }
+    .nav-logo .logo-icon { font-size:26px; -webkit-text-fill-color:initial; }
+    .nav-links { display:flex; gap:2px; }
+    .nav-links a { text-decoration:none; color:#475569; padding:8px 18px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
     .nav-links a:hover, .nav-links a.active { color:#3B82F6; background:#EFF6FF; }
-    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:16px; }
-    .container { max-width:1200px; margin:0 auto; padding:24px; }
-    .breadcrumb { margin-bottom:20px; font-size:13px; color:#64748B; }
-    .breadcrumb a { color:#3B82F6; text-decoration:none; }
-    .detail-grid { display:grid; grid-template-columns:1fr 360px; gap:24px; }
-    .main-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); }
-    .img-section { height:300px; background:linear-gradient(135deg,#FEF3C7,#FDE68A); display:flex; align-items:center; justify-content:center; }
-    .img-section img { max-width:100%; max-height:100%; object-fit:contain; }
+    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:18px; }
+    .container { max-width:1240px; margin:0 auto; padding:24px; }
+    .breadcrumb { margin-bottom:20px; font-size:13px; color:#64748B; display:flex; align-items:center; gap:6px; }
+    .breadcrumb a { color:#3B82F6; }
+    .breadcrumb .sep { color:#CBD5E1; }
+    .detail-grid { display:grid; grid-template-columns:1fr 380px; gap:24px; }
+    .main-card { background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); border:1px solid #F1F5F9; }
+    .img-main { height:240px; background:linear-gradient(135deg,#FEF3C7,#FDE68A); display:flex; align-items:center; justify-content:center; }
+    .img-main img { max-width:65%; max-height:80%; object-fit:contain; border-radius:12px; }
     .main-body { padding:24px; }
-    .detail-title { font-size:24px; font-weight:700; color:#1E293B; margin-bottom:12px; }
-    .detail-tags { display:flex; gap:8px; margin-bottom:16px; }
-    .reward-card { margin-bottom:20px; padding:20px; background:linear-gradient(135deg,#FFFBEB,#FEF3C7); border-radius:12px; text-align:center; }
-    .reward-amount { font-size:36px; font-weight:800; color:#D97706; }
-    .detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; padding:16px; background:#F8FAFC; border-radius:10px; }
-    .meta-item { font-size:13px; }
-    .meta-item .label { color:#64748B; }
-    .meta-item .value { color:#1E293B; font-weight:500; }
-    .detail-body { margin-bottom:24px; padding-top:16px; border-top:1px solid #F1F5F9; }
+    .detail-title { font-size:24px; font-weight:700; color:#1E293B; margin-bottom:14px; }
+    .detail-tags { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
+    .reward-card { margin-bottom:20px; padding:20px 24px; background:linear-gradient(135deg,#FFFBEB,#FEF3C7); border-radius:14px; text-align:center; border:1px solid #FDE68A; }
+    .reward-amt { font-size:40px; font-weight:800; color:#D97706; }
+    .detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px; padding:18px; background:#F8FAFC; border-radius:12px; }
+    .meta-item { font-size:13px; display:flex; gap:4px; }
+    .meta-item .lbl { color:#64748B; white-space:nowrap; }
+    .meta-item .val { color:#1E293B; font-weight:500; }
+    .detail-body { margin-bottom:24px; padding-top:18px; border-top:1px solid #F1F5F9; }
     .detail-body h3 { font-size:17px; font-weight:600; margin-bottom:12px; }
-    .detail-body p { font-size:14px; color:#475569; line-height:1.9; }
-    .detail-actions { display:flex; gap:12px; padding-top:16px; border-top:1px solid #F1F5F9; }
-    .side-card { background:#fff; border-radius:14px; padding:20px; box-shadow:0 1px 8px rgba(0,0,0,0.04); margin-bottom:16px; }
-    .timeline { padding-left:16px; border-left:2px solid #E2E8F0; margin-bottom:16px; }
-    .timeline-item { position:relative; padding:4px 0 16px 20px; }
-    .timeline-item::before { content:''; position:absolute; left:-25px; top:8px; width:10px; height:10px; border-radius:50%; background:#F59E0B; }
-    .timeline-item.current::before { background:#10B981; }
+    .detail-body p { font-size:14px; color:#475569; line-height:2; }
+    .detail-actions { display:flex; gap:12px; padding-top:18px; border-top:1px solid #F1F5F9; flex-wrap:wrap; }
+    .side-card { background:#fff; border-radius:16px; padding:22px; box-shadow:0 1px 8px rgba(0,0,0,0.04); margin-bottom:16px; border:1px solid #F1F5F9; }
+    .side-card h3 { font-size:16px; font-weight:700; color:#1E293B; margin-bottom:16px; display:flex; align-items:center; gap:6px; }
+    .seller-row { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+    .seller-avt { width:52px; height:52px; border-radius:50%; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
+    .seller-avt img { width:100%; height:100%; object-fit:cover; }
+    .seller-name { font-size:16px; font-weight:600; }
+    .timeline { padding-left:18px; border-left:2px solid #E2E8F0; margin-bottom:16px; }
+    .tl-item { position:relative; padding:5px 0 18px 22px; font-size:13px; }
+    .tl-item::before { content:''; position:absolute; left:-27px; top:7px; width:12px; height:12px; border-radius:50%; background:#CBD5E1; }
+    .tl-item.done::before { background:#10B981; }
+    .tl-item.current { color:#1E293B; font-weight:600; }
+    .tl-item.current::before { background:#D97706; box-shadow:0 0 0 4px rgba(217,119,6,0.2); }
+    .tl-item .tl-time { font-size:11px; color:#94A3B8; }
+    .footer-bar { background:#fff; border-top:1px solid #E2E8F0; margin-top:40px; padding:24px; text-align:center; }
+    .footer-bar p { font-size:12px; color:#94A3B8; line-height:1.8; }
+    .footer-bar a { color:#3B82F6; }
   </style>
 </head>
 <body>
   <div id="app">
     <div class="top-nav">
-      <div class="nav-logo">🏫 校园轻集市</div>
+      <div class="nav-logo"><span class="logo-icon">🏫</span> 校园轻集市</div>
       <div class="nav-links">
-        <a href="home.html">首页</a>
-        <a href="category.html">分类浏览</a>
-        <a href="publish.html">发布信息</a>
-        <a href="messages.html">消息</a>
-        <a href="profile.html">个人中心</a>
+        <a href="home.html">首页</a> <a href="category.html">分类浏览</a> <a href="publish.html">发布信息</a> <a href="messages.html">消息</a> <a href="profile.html">个人中心</a>
       </div>
       <div class="nav-actions">
-        <el-button size="small" type="primary" onclick="location.href='login.html'">登录</el-button>
-        <el-button size="small" onclick="location.href='register.html'">注册</el-button>
+        <el-button size="default" type="primary" onclick="location.href='login.html'">登录</el-button>
+        <el-button size="default" onclick="location.href='register.html'">注册</el-button>
       </div>
     </div>
 
     <div class="container">
       <div class="breadcrumb">
-        <a href="home.html">首页</a><span>/</span><a href="category.html?cat=errand">跑腿委托</a><span>/</span><span style="color:#1E293B;">帮取中通快递到6栋宿舍</span>
+        <a href="home.html">首页</a><span class="sep">/</span><a href="category.html?cat=errand">跑腿委托</a><span class="sep">/</span><span style="color:#1E293B;font-weight:500;">帮取中通快递到6栋宿舍</span>
       </div>
 
       <div class="detail-grid">
         <div>
           <div class="main-card">
-            <div class="img-section">
-              <img src="https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=600&h=300&fit=crop" alt="">
-            </div>
+            <div class="img-main"><img src="https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=600&h=300&fit=crop" alt=""></div>
             <div class="main-body">
               <h1 class="detail-title">📦 帮取中通快递到 6 栋宿舍</h1>
               <div class="detail-tags">
                 <el-tag type="warning">📦 代取快递</el-tag>
                 <el-tag>中通</el-tag>
                 <el-tag>体积较大</el-tag>
-                <span style="font-size:12px;color:#94A3B8;line-height:32px;">👁 67次浏览 · 🕐 1小时前</span>
+                <span style="font-size:12px;color:#94A3B8;margin-left:8px;">👁 67次浏览 · 🕐 1小时前 · 🆔 ER20260628012</span>
               </div>
 
               <div class="reward-card">
-                <div style="font-size:13px;color:#92400E;margin-bottom:4px;">💰 任务报酬</div>
-                <div class="reward-amount">¥5.00</div>
+                <div style="font-size:13px;color:#92400E;margin-bottom:6px;">💰 任务报酬</div>
+                <div class="reward-amt">¥5.00</div>
                 <div style="font-size:12px;color:#92400E;">微信/支付宝到付</div>
               </div>
 
               <div class="detail-meta">
-                <div class="meta-item"><span class="label">📍 取件地址：</span><span class="value">西门菜鸟驿站（中通快递）</span></div>
-                <div class="meta-item"><span class="label">🏠 送达地址：</span><span class="value">校本部 6 栋宿舍楼下</span></div>
-                <div class="meta-item"><span class="label">⏰ 期望完成：</span><span class="value">今天下午 6:00 前</span></div>
-                <div class="meta-item"><span class="label">📦 物品类型：</span><span class="value">羽绒服（体积大，不重）</span></div>
-                <div class="meta-item"><span class="label">📱 联系方式：</span><span class="value">136xxxx3456</span></div>
-                <div class="meta-item"><span class="label">🆔 任务编号：</span><span class="value">ER20260628012</span></div>
+                <div class="meta-item"><span class="lbl">📍 取件地址：</span><span class="val">西门菜鸟驿站（中通快递）</span></div>
+                <div class="meta-item"><span class="lbl">🏠 送达地址：</span><span class="val">校本部 6 栋宿舍楼下</span></div>
+                <div class="meta-item"><span class="lbl">⏰ 期望完成：</span><span class="val">今天下午 6:00 前</span></div>
+                <div class="meta-item"><span class="lbl">📦 物品类型：</span><span class="val">羽绒服（体积大，不重）</span></div>
               </div>
 
               <div class="detail-body">
                 <h3>📝 任务详情</h3>
-                <p>在西门菜鸟驿站有一个中通快递需要取，是一件羽绒服。东西不重但是包装袋体积有点大，大概和一个小行李箱差不多。<br><br>
-                取件码我已经收到了：7-3-8821。取出来之后送到校本部 6 栋宿舍楼下就行，到了打我电话 136xxxx3456，我下来拿。<br><br>
-                任务很简单，就是取个快递。希望能在今天下午 6 点之前完成，因为晚上要穿这个羽绒服出门。如果你刚好顺路或者在附近，顺手帮忙取一下，酬谢 5 元。<br><br>
-                感谢帮忙！🙏</p>
+                <p>在西门菜鸟驿站有一个中通快递需要取，是一件羽绒服。东西不重但包装袋体积略大，大概和小行李箱差不多。<br><br>取件码：7-3-8821。取出来之后送到校本部6栋宿舍楼下，到了打我电话136xxxx3456，我下来拿。<br><br>任务很简单就是取个快递。希望能在今天下午6点前完成，因为晚上要穿。如果你顺路或者刚好在附近，顺手帮忙取一下，酬谢5元。感谢帮忙！🙏</p>
               </div>
 
               <div class="detail-actions">
-                <el-button type="warning" size="large" style="width:200px;" @click="takeTask">✋ 我要接单</el-button>
-                <el-button size="large" style="width:120px;">💬 联系发布者</el-button>
+                <el-button type="warning" size="large" style="min-width:200px;" @click="takeTask">✋ 我要接单</el-button>
+                <el-button size="large" style="min-width:140px;" @click="contact">💬 联系发布者</el-button>
                 <div style="flex:1;"></div>
                 <el-button size="large">⭐ 收藏</el-button>
               </div>
@@ -116,44 +119,47 @@
 
         <div>
           <div class="side-card">
-            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">👤 发布者</h3>
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-              <div style="width:48px;height:48px;border-radius:50%;overflow:hidden;background:#E2E8F0;">
-                <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop" alt="" style="width:100%;height:100%;object-fit:cover;">
-              </div>
+            <h3>👤 发布者</h3>
+            <div class="seller-row">
+              <div class="seller-avt"><img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=120&h=120&fit=crop" alt=""></div>
               <div>
-                <div style="font-size:16px;font-weight:600;">赵同学</div>
+                <div class="seller-name">赵同学</div>
                 <div style="font-size:12px;color:#10B981;">✅ 已认证 · 发布过5个任务</div>
               </div>
             </div>
             <el-button type="warning" style="width:100%;margin-bottom:8px;" @click="takeTask">✋ 我要接单</el-button>
-            <el-button style="width:100%;">💬 联系发布者</el-button>
+            <el-button style="width:100%;" @click="contact">💬 联系发布者</el-button>
           </div>
 
           <div class="side-card">
-            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">🔔 任务状态</h3>
+            <h3>🔔 任务状态</h3>
             <div class="timeline">
-              <div class="timeline-item current"><div style="font-size:13px;font-weight:600;color:#10B981;">待接单</div><div style="font-size:11px;color:#94A3B8;">1小时前发布</div></div>
-              <div class="timeline-item"><div style="font-size:13px;color:#94A3B8;">等待取件</div></div>
-              <div class="timeline-item"><div style="font-size:13px;color:#94A3B8;">已送达</div></div>
+              <div class="tl-item current"><div>待接单</div><div class="tl-time">1小时前发布</div></div>
+              <div class="tl-item"><div style="color:#94A3B8;">等待取件</div></div>
+              <div class="tl-item"><div style="color:#94A3B8;">已送达</div></div>
             </div>
           </div>
 
           <div class="side-card">
-            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">🔥 更多跑腿任务</h3>
-            <a href="task-detail.html" style="display:flex;gap:10px;padding:10px 0;text-decoration:none;color:inherit;border-bottom:1px solid #F1F5F9;">
+            <h3>🔥 更多跑腿任务</h3>
+            <a href="task-detail.html" style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #F8FAFC;text-decoration:none;color:inherit;">
               <span style="font-size:20px;">🍱</span>
               <div style="flex:1;"><div style="font-size:13px;font-weight:500;">帮买东门煎饼果子</div><div style="font-size:11px;color:#94A3B8;">20分钟前</div></div>
               <span style="font-size:14px;font-weight:700;color:#D97706;">¥8</span>
             </a>
             <a href="task-detail.html" style="display:flex;gap:10px;padding:10px 0;text-decoration:none;color:inherit;">
               <span style="font-size:20px;">🖨️</span>
-              <div style="flex:1;"><div style="font-size:13px;font-weight:500;">代打印论文30页</div><div style="font-size:11px;color:#94A3B8;">2小时前</div></div>
+              <div style="flex:1;"><div style="font-size:13px;font-weight:500;">代打印论文30页双面</div><div style="font-size:11px;color:#94A3B8;">2小时前</div></div>
               <span style="font-size:14px;font-weight:700;color:#D97706;">¥3</span>
             </a>
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="footer-bar">
+      <p>© 2026 校园轻集市 · 为校园生活而生</p>
+      <p><a href="home.html">返回首页</a> · <a href="category.html">分类浏览</a></p>
     </div>
   </div>
 
@@ -162,11 +168,12 @@
     const app = createApp({
       setup() {
         function takeTask() { ElementPlus.ElMessage.success('✅ 接单成功！请及时联系发布者确认取件信息。') }
-        return { takeTask }
+        function contact() { ElementPlus.ElMessage.success('已发送联系请求') }
+        return { takeTask, contact }
       }
     })
     app.use(ElementPlus)
     app.mount('#app')
-</script>
+  </script>
 </body>
 </html>

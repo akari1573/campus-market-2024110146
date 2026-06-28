@@ -10,30 +10,31 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; color: #1E293B; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#F1F5F9; color:#1E293B; }
+    a { text-decoration:none; }
     .admin-layout { display:flex; min-height:100vh; }
-    .admin-sidebar { width:240px; background:#1E293B; color:#fff; flex-shrink:0; display:flex; flex-direction:column; }
-    .sidebar-logo { padding:20px; font-size:18px; font-weight:800; border-bottom:1px solid #334155; }
-    .sidebar-menu { flex:1; padding:12px 0; }
-    .sidebar-menu a { display:flex; align-items:center; gap:10px; padding:12px 20px; color:#94A3B8; text-decoration:none; font-size:14px; transition:all 0.2s; }
-    .sidebar-menu a:hover, .sidebar-menu a.active { color:#fff; background:#334155; }
-    .sidebar-menu a.active { border-right:3px solid #3B82F6; }
-    .sidebar-user { padding:16px 20px; border-top:1px solid #334155; font-size:13px; color:#94A3B8; }
-    .admin-main { flex:1; padding:24px; }
-    .admin-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
-    .admin-header h1 { font-size:24px; font-weight:700; }
-    .filter-bar { display:flex; gap:12px; margin-bottom:20px; padding:16px; background:#fff; border-radius:12px; box-shadow:0 1px 6px rgba(0,0,0,0.04); flex-wrap:wrap; align-items:center; }
-    .table-card { background:#fff; border-radius:14px; box-shadow:0 1px 6px rgba(0,0,0,0.04); overflow:hidden; }
-    .el-table { font-size:13px; }
-    .review-actions { display:flex; gap:6px; }
+    .admin-sidebar { width:250px; background:#1E293B; color:#fff; flex-shrink:0; display:flex; flex-direction:column; }
+    .sb-logo { padding:22px 24px; font-size:18px; font-weight:800; border-bottom:1px solid #334155; }
+    .sb-menu { flex:1; padding:14px 0; }
+    .sb-menu a { display:flex; align-items:center; gap:12px; padding:13px 24px; color:#94A3B8; text-decoration:none; font-size:14px; transition:all 0.2s; border-left:3px solid transparent; }
+    .sb-menu a:hover, .sb-menu a.active { color:#fff; background:#334155; }
+    .sb-menu a.active { border-left-color:#3B82F6; }
+    .sb-user { padding:18px 24px; border-top:1px solid #334155; font-size:13px; color:#94A3B8; }
+    .sb-user a { color:#94A3B8; font-size:12px; }
+    .admin-main { flex:1; padding:28px; overflow-y:auto; }
+    .admin-hd { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .admin-hd h1 { font-size:26px; font-weight:700; }
+    .filter-card { display:flex; gap:14px; margin-bottom:20px; padding:18px; background:#fff; border-radius:14px; box-shadow:0 1px 6px rgba(0,0,0,0.03); flex-wrap:wrap; align-items:center; border:1px solid #F1F5F9; }
+    .table-card { background:#fff; border-radius:16px; box-shadow:0 1px 6px rgba(0,0,0,0.03); overflow:hidden; border:1px solid #F1F5F9; }
+    .pagination-wrap { display:flex; justify-content:center; margin-top:22px; }
   </style>
 </head>
 <body>
   <div id="app">
     <div class="admin-layout">
       <div class="admin-sidebar">
-        <div class="sidebar-logo">🛡️ 管理后台</div>
-        <div class="sidebar-menu">
+        <div class="sb-logo">🛡️ 校园轻集市 - 管理后台</div>
+        <div class="sb-menu">
           <a href="admin-dashboard.html">📊 数据概览</a>
           <a href="admin-review.html" class="active">📋 信息审核</a>
           <a href="#">👥 用户管理</a>
@@ -41,22 +42,20 @@
           <a href="#">📈 数据统计</a>
           <a href="#">⚙️ 系统设置</a>
         </div>
-        <div class="sidebar-user">
+        <div class="sb-user">
           <div>👤 管理员</div>
-          <a href="home.html" style="color:#94A3B8;font-size:12px;">返回前台</a>
+          <a href="home.html">← 返回前台</a>
         </div>
       </div>
 
       <div class="admin-main">
-        <div class="admin-header">
+        <div class="admin-hd">
           <h1>📋 信息审核</h1>
           <el-tag type="warning" size="large">待审核 {{ pendingCount }} 条</el-tag>
         </div>
 
-        <div class="filter-bar">
-          <el-input v-model="searchText" placeholder="搜索信息..." size="default" style="width:200px;" clearable>
-            <template #prefix>🔍</template>
-          </el-input>
+        <div class="filter-card">
+          <el-input v-model="searchText" placeholder="搜索信息..." size="default" style="width:200px;" clearable><template #prefix>🔍</template></el-input>
           <el-select v-model="filterType" placeholder="信息类型" size="default" style="width:140px;" clearable>
             <el-option label="全部" value="all"></el-option>
             <el-option label="二手交易" value="secondhand"></el-option>
@@ -71,20 +70,20 @@
             <el-option label="已驳回" value="rejected"></el-option>
           </el-select>
           <div style="flex:1;"></div>
-          <span style="font-size:13px;color:#64748B;">共 {{ filteredItems.length }} 条</span>
+          <span style="font-size:13px;color:#64748B;">共 {{ filteredItems.length }} 条记录</span>
         </div>
 
         <div class="table-card">
-          <el-table :data="pagedItems" stripe style="width:100%;" :default-sort="{prop:'time',order:'descending'}">
-            <el-table-column prop="id" label="编号" width="70"></el-table-column>
-            <el-table-column prop="type" label="类型" width="110">
+          <el-table :data="pagedItems" stripe style="width:100%;font-size:13px;" :default-sort="{prop:'time',order:'descending'}">
+            <el-table-column prop="id" label="编号" width="80"></el-table-column>
+            <el-table-column prop="type" label="类型" width="120">
               <template #default="scope">
                 <el-tag size="small" :type="scope.row.typeTag">{{ scope.row.type }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="title" label="信息标题" min-width="200" show-overflow-tooltip></el-table-column>
+            <el-table-column prop="title" label="信息标题" min-width="220" show-overflow-tooltip></el-table-column>
             <el-table-column prop="publisher" label="发布者" width="100"></el-table-column>
-            <el-table-column prop="time" label="发布时间" width="120" sortable></el-table-column>
+            <el-table-column prop="time" label="发布时间" width="130" sortable></el-table-column>
             <el-table-column prop="status" label="状态" width="100">
               <template #default="scope">
                 <el-tag size="small" :type="scope.row.status==='pending'?'warning':scope.row.status==='approved'?'success':'danger'">
@@ -92,9 +91,9 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="220" fixed="right">
+            <el-table-column label="操作" width="240" fixed="right">
               <template #default="scope">
-                <div class="review-actions">
+                <div style="display:flex;gap:6px;">
                   <el-button size="small" type="success" @click="approve(scope.row)" :disabled="scope.row.status!=='pending'">通过</el-button>
                   <el-button size="small" type="danger" @click="reject(scope.row)" :disabled="scope.row.status!=='pending'">驳回</el-button>
                   <el-button size="small" @click="viewDetail(scope.row)">详情</el-button>
@@ -103,8 +102,8 @@
             </el-table-column>
           </el-table>
         </div>
-        <div style="display:flex;justify-content:center;margin-top:20px;">
-          <el-pagination background layout="prev,pager,next" :total="filteredItems.length" :page-size="pageSize" v-model:current-page="currentPage"></el-pagination>
+        <div class="pagination-wrap">
+          <el-pagination background layout="prev,pager,next,total" :total="filteredItems.length" :page-size="pageSize" v-model:current-page="currentPage"></el-pagination>
         </div>
       </div>
     </div>
@@ -121,16 +120,16 @@
         const pageSize = ref(8)
 
         const items = ref([
-          { id:'SH001', type:'二手交易', typeTag:'primary', title:'九成新 iPhone 14 Pro 256G', publisher:'张三', time:'2026-06-28', status:'pending' },
-          { id:'LS001', type:'失物招领', typeTag:'danger', title:'丢失黑色 AirPods Pro 充电盒', publisher:'李同学', time:'2026-06-28', status:'pending' },
-          { id:'GP001', type:'拼单搭子', typeTag:'success', title:'霸王茶姬拼奶茶 还差2人', publisher:'王同学', time:'2026-06-28', status:'approved' },
-          { id:'ER001', type:'跑腿委托', typeTag:'warning', title:'帮取中通快递到6栋宿舍', publisher:'赵同学', time:'2026-06-28', status:'pending' },
-          { id:'SH002', type:'二手交易', typeTag:'primary', title:'考研数学全套资料', publisher:'张三', time:'2026-06-27', status:'approved' },
+          { id:'SH001', type:'二手交易', typeTag:'primary', title:'九成新 iPhone 14 Pro 256G 深空黑', publisher:'张三', time:'2026-06-28', status:'pending' },
+          { id:'LS001', type:'失物招领', typeTag:'danger', title:'西门打印店丢失黑色 AirPods Pro 充电盒', publisher:'李同学', time:'2026-06-28', status:'pending' },
+          { id:'GP001', type:'拼单搭子', typeTag:'success', title:'东区食堂霸王茶姬拼奶茶 还差2人', publisher:'王同学', time:'2026-06-28', status:'approved' },
+          { id:'ER001', type:'跑腿委托', typeTag:'warning', title:'帮取中通快递到6栋宿舍 酬谢5元', publisher:'赵同学', time:'2026-06-28', status:'pending' },
+          { id:'SH002', type:'二手交易', typeTag:'primary', title:'考研数学全套资料 几乎全新', publisher:'张三', time:'2026-06-27', status:'approved' },
           { id:'SH003', type:'二手交易', typeTag:'primary', title:'代写论文 包过 低价', publisher:'匿名用户', time:'2026-06-27', status:'rejected' },
-          { id:'LS002', type:'失物招领', typeTag:'info', title:'拾到校园卡一张 尾号8832', publisher:'王同学', time:'2026-06-27', status:'approved' },
-          { id:'GP002', type:'拼单搭子', typeTag:'success', title:'篮球搭子缺3人 周六下午', publisher:'刘同学', time:'2026-06-26', status:'approved' },
-          { id:'ER002', type:'跑腿委托', typeTag:'warning', title:'代打印论文30页', publisher:'孙同学', time:'2026-06-26', status:'pending' },
-          { id:'SH004', type:'二手交易', typeTag:'primary', title:'虚假品牌包 低价清仓', publisher:'可疑用户', time:'2026-06-25', status:'rejected' },
+          { id:'LS002', type:'失物招领', typeTag:'info', title:'拾到校园卡一张 尾号8832 请失主联系', publisher:'王同学', time:'2026-06-27', status:'approved' },
+          { id:'GP002', type:'拼单搭子', typeTag:'success', title:'周六下午篮球搭子 缺3人', publisher:'刘同学', time:'2026-06-26', status:'approved' },
+          { id:'ER002', type:'跑腿委托', typeTag:'warning', title:'代打印论文初稿 30页双面', publisher:'孙同学', time:'2026-06-26', status:'pending' },
+          { id:'SH004', type:'二手交易', typeTag:'primary', title:'虚假品牌包 低价清仓促销', publisher:'可疑用户', time:'2026-06-25', status:'rejected' },
         ])
 
         const filteredItems = computed(() => {
@@ -154,8 +153,10 @@
           ElementPlus.ElMessage.success(`信息 ${row.id} 已审核通过`)
         }
         function reject(row) {
-          row.status = 'rejected'
-          ElementPlus.ElMessage.warning(`信息 ${row.id} 已被驳回`)
+          ElementPlus.ElMessageBox.prompt('请输入驳回原因','驳回信息',{confirmButtonText:'确定驳回',cancelButtonText:'取消'}).then(({value})=>{
+            row.status = 'rejected'
+            ElementPlus.ElMessage.warning(`信息 ${row.id} 已驳回，原因：${value||'违规内容'}`)
+          }).catch(()=>{})
         }
         function viewDetail(row) {
           const links = { '二手交易':'item-detail.html', '失物招领':'lost-detail.html', '拼单搭子':'group-detail.html', '跑腿委托':'task-detail.html' }
@@ -167,6 +168,6 @@
     })
     app.use(ElementPlus)
     app.mount('#app')
-</script>
+  </script>
 </body>
 </html>

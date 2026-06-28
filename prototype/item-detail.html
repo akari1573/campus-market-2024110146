@@ -10,58 +10,77 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F8FAFC; color: #1E293B; }
-    .top-nav { display:flex; align-items:center; padding:0 24px; height:60px; background:#fff; box-shadow:0 1px 12px rgba(0,0,0,0.04); position:sticky; top:0; z-index:100; border-bottom:1px solid #F1F5F9; }
-    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; }
-    .nav-links { display:flex; gap:4px; }
-    .nav-links a { text-decoration:none; color:#475569; padding:8px 16px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background:#F1F5F9; color:#1E293B; }
+    a { text-decoration:none; }
+    .top-nav { display:flex; align-items:center; padding:0 28px; height:64px; background:#fff; position:sticky; top:0; z-index:100; border-bottom:1px solid #E2E8F0; box-shadow:0 1px 12px rgba(0,0,0,0.03); }
+    .nav-logo { font-size:20px; font-weight:800; background:linear-gradient(135deg,#3B82F6,#06B6D4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-right:auto; display:flex; align-items:center; gap:6px; }
+    .nav-logo .logo-icon { font-size:26px; -webkit-text-fill-color:initial; }
+    .nav-links { display:flex; gap:2px; }
+    .nav-links a { text-decoration:none; color:#475569; padding:8px 18px; border-radius:8px; font-size:14px; font-weight:500; transition:all 0.2s; }
     .nav-links a:hover, .nav-links a.active { color:#3B82F6; background:#EFF6FF; }
-    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:16px; }
-    .container { max-width:1200px; margin:0 auto; padding:24px; }
-    .breadcrumb { margin-bottom:20px; font-size:13px; color:#64748B; }
+    .nav-actions { display:flex; align-items:center; gap:12px; margin-left:18px; }
+    .container { max-width:1240px; margin:0 auto; padding:24px; }
+
+    .breadcrumb { margin-bottom:20px; font-size:13px; color:#64748B; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
     .breadcrumb a { color:#3B82F6; text-decoration:none; }
-    .breadcrumb span { margin:0 6px; }
-    .detail-grid { display:grid; grid-template-columns:1fr 360px; gap:24px; }
-    .main-card { background:#fff; border-radius:16px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); }
-    .img-section { height:420px; background:#E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-    .img-section img { width:100%; height:100%; object-fit:contain; }
-    .img-thumbs { display:flex; gap:8px; padding:12px; }
-    .img-thumb { width:72px; height:72px; border-radius:8px; overflow:hidden; cursor:pointer; border:2px solid transparent; background:#E2E8F0; }
-    .img-thumb:hover, .img-thumb.active { border-color:#3B82F6; }
+    .breadcrumb .sep { color:#CBD5E1; }
+
+    .detail-grid { display:grid; grid-template-columns:1fr 380px; gap:24px; }
+    .main-card { background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 1px 8px rgba(0,0,0,0.04); border:1px solid #F1F5F9; }
+    .img-main { height:460px; background:#E2E8F0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .img-main img { width:100%; height:100%; object-fit:contain; background:#F8FAFC; }
+    .img-thumbs { display:flex; gap:10px; padding:14px 16px; }
+    .img-thumb { width:80px; height:80px; border-radius:10px; overflow:hidden; cursor:pointer; border:2.5px solid transparent; background:#E2E8F0; transition:all 0.2s; }
+    .img-thumb:hover { border-color:#93C5FD; }
+    .img-thumb.active { border-color:#3B82F6; }
     .img-thumb img { width:100%; height:100%; object-fit:cover; }
-    .main-body { padding:24px; }
-    .detail-title { font-size:24px; font-weight:700; color:#1E293B; margin-bottom:4px; }
-    .detail-price { font-size:32px; font-weight:800; color:#EF4444; margin-bottom:16px; }
-    .detail-tags { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
-    .detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; padding:16px; background:#F8FAFC; border-radius:10px; }
-    .meta-item { font-size:13px; }
-    .meta-item .label { color:#64748B; }
-    .meta-item .value { color:#1E293B; font-weight:500; }
-    .detail-body { margin-bottom:24px; padding-top:16px; border-top:1px solid #F1F5F9; }
+
+    .main-body { padding:0 24px 24px; }
+    .detail-title { font-size:24px; font-weight:700; color:#1E293B; margin-bottom:6px; line-height:1.3; }
+    .detail-price { font-size:34px; font-weight:800; color:#EF4444; margin-bottom:16px; display:flex; align-items:baseline; gap:10px; }
+    .detail-price .orig { font-size:14px; font-weight:400; color:#94A3B8; text-decoration:line-through; }
+    .detail-tags { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; align-items:center; }
+
+    .detail-meta { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px; padding:18px; background:#F8FAFC; border-radius:12px; }
+    .meta-item { font-size:13px; display:flex; gap:4px; }
+    .meta-item .lbl { color:#64748B; white-space:nowrap; }
+    .meta-item .val { color:#1E293B; font-weight:500; }
+
+    .detail-body { margin-bottom:24px; padding-top:18px; border-top:1px solid #F1F5F9; }
     .detail-body h3 { font-size:17px; font-weight:600; margin-bottom:12px; }
-    .detail-body p { font-size:14px; color:#475569; line-height:1.9; }
-    .detail-actions { display:flex; gap:12px; padding-top:16px; border-top:1px solid #F1F5F9; }
-    .side-card { background:#fff; border-radius:14px; padding:20px; box-shadow:0 1px 8px rgba(0,0,0,0.04); margin-bottom:16px; }
-    .seller-info { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
-    .seller-avatar { width:48px; height:48px; border-radius:50%; overflow:hidden; background:#E2E8F0; }
-    .seller-avatar img { width:100%; height:100%; object-fit:cover; }
+    .detail-body p { font-size:14px; color:#475569; line-height:2; }
+    .detail-actions { display:flex; gap:12px; padding-top:18px; border-top:1px solid #F1F5F9; flex-wrap:wrap; }
+
+    .side-card { background:#fff; border-radius:16px; padding:22px; box-shadow:0 1px 8px rgba(0,0,0,0.04); margin-bottom:16px; border:1px solid #F1F5F9; }
+    .side-card h3 { font-size:16px; font-weight:700; color:#1E293B; margin-bottom:16px; display:flex; align-items:center; gap:6px; }
+    .seller-row { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+    .seller-avt { width:52px; height:52px; border-radius:50%; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
+    .seller-avt img { width:100%; height:100%; object-fit:cover; }
     .seller-name { font-size:16px; font-weight:600; }
     .seller-badge { font-size:12px; color:#10B981; }
-    .stat-row { display:flex; gap:16px; margin-bottom:16px; font-size:13px; color:#64748B; }
-    .recommend-card { display:flex; gap:10px; padding:10px 0; border-bottom:1px solid #F1F5F9; cursor:pointer; text-decoration:none; color:inherit; }
-    .recommend-card:last-child { border-bottom:none; }
-    .recommend-card:hover { color:#3B82F6; }
-    .rec-img { width:56px; height:56px; border-radius:8px; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
-    .rec-img img { width:100%; height:100%; object-fit:cover; }
-    .rec-info { flex:1; min-width:0; }
-    .rec-title { font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .rec-price { font-size:14px; font-weight:700; color:#EF4444; }
+    .seller-stats { display:flex; gap:16px; margin-bottom:18px; font-size:13px; color:#64748B; flex-wrap:wrap; }
+
+    .rec-row { display:flex; gap:10px; padding:11px 0; border-bottom:1px solid #F8FAFC; cursor:pointer; text-decoration:none; color:inherit; transition:color 0.2s; }
+    .rec-row:last-child { border-bottom:none; }
+    .rec-row:hover { color:#3B82F6; }
+    .rec-thumb { width:60px; height:60px; border-radius:10px; overflow:hidden; background:#E2E8F0; flex-shrink:0; }
+    .rec-thumb img { width:100%; height:100%; object-fit:cover; }
+    .rec-mid { flex:1; min-width:0; }
+    .rec-name { font-size:13px; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .rec-views { font-size:11px; color:#94A3B8; }
+    .rec-price { font-size:14px; font-weight:700; color:#EF4444; white-space:nowrap; }
+
+    .safety-box { background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; padding:16px; font-size:13px; color:#92400E; line-height:1.9; }
+
+    .footer-bar { background:#fff; border-top:1px solid #E2E8F0; margin-top:40px; padding:24px; text-align:center; }
+    .footer-bar p { font-size:12px; color:#94A3B8; line-height:1.8; }
+    .footer-bar a { color:#3B82F6; text-decoration:none; }
   </style>
 </head>
 <body>
   <div id="app">
     <div class="top-nav">
-      <div class="nav-logo">🏫 校园轻集市</div>
+      <div class="nav-logo"><span class="logo-icon">🏫</span> 校园轻集市</div>
       <div class="nav-links">
         <a href="home.html">首页</a>
         <a href="category.html">分类浏览</a>
@@ -70,22 +89,20 @@
         <a href="profile.html">个人中心</a>
       </div>
       <div class="nav-actions">
-        <el-button size="small" type="primary" onclick="location.href='login.html'">登录</el-button>
-        <el-button size="small" onclick="location.href='register.html'">注册</el-button>
+        <el-button size="default" type="primary" onclick="location.href='login.html'">登录</el-button>
+        <el-button size="default" onclick="location.href='register.html'">注册</el-button>
       </div>
     </div>
 
     <div class="container">
       <div class="breadcrumb">
-        <a href="home.html">首页</a><span>/</span><a href="category.html?cat=secondhand">二手交易</a><span>/</span><span style="color:#1E293B;">九成新 iPhone 14 Pro 256G 深空黑</span>
+        <a href="home.html">首页</a><span class="sep">/</span><a href="category.html?cat=secondhand">二手交易</a><span class="sep">/</span><span style="color:#1E293B;font-weight:500;">九成新 iPhone 14 Pro 256G 深空黑</span>
       </div>
 
       <div class="detail-grid">
         <div>
           <div class="main-card">
-            <div class="img-section">
-              <img :src="mainImage" alt="商品图片">
-            </div>
+            <div class="img-main"><img :src="mainImage" alt="商品图片"></div>
             <div class="img-thumbs">
               <div v-for="(img,i) in images" :key="i" :class="['img-thumb', mainImage===img?'active':'']" @click="mainImage=img">
                 <img :src="img" alt="">
@@ -93,30 +110,28 @@
             </div>
             <div class="main-body">
               <h1 class="detail-title">九成新 iPhone 14 Pro 256G 深空黑</h1>
-              <div class="detail-price">¥4,200 <span style="font-size:14px;font-weight:400;color:#94A3B8;">原价 ¥8,999</span></div>
+              <div class="detail-price">¥4,200 <span class="orig">¥8,999</span></div>
               <div class="detail-tags">
                 <el-tag type="primary" size="default">📱 数码/电器</el-tag>
                 <el-tag size="default">九成新</el-tag>
                 <el-tag size="default">深空黑</el-tag>
-                <span style="font-size:12px;color:#94A3B8;line-height:32px;">👁 328 次浏览 · 🕐 2小时前发布</span>
+                <span style="font-size:12px;color:#94A3B8;margin-left:8px;">👁 328 次浏览 · 🕐 2小时前发布 · 🆔 SH20260628001</span>
               </div>
               <div class="detail-meta">
-                <div class="meta-item"><span class="label">📍 交易地点：</span><span class="value">校本部 3 号楼楼下</span></div>
-                <div class="meta-item"><span class="label">📱 联系方式：</span><span class="value">138xxxx1234</span></div>
-                <div class="meta-item"><span class="label">💳 交易方式：</span><span class="value">当面交易 / 可小刀</span></div>
-                <div class="meta-item"><span class="label">🆔 信息编号：</span><span class="value">SH20260628001</span></div>
+                <div class="meta-item"><span class="lbl">📍 交易地点：</span><span class="val">校本部 3 号楼楼下</span></div>
+                <div class="meta-item"><span class="lbl">📱 联系方式：</span><span class="val">138xxxx1234</span></div>
+                <div class="meta-item"><span class="lbl">💳 交易方式：</span><span class="val">当面交易 / 可小刀</span></div>
+                <div class="meta-item"><span class="lbl">💯 电池健康：</span><span class="val" style="color:#10B981;">92%</span></div>
               </div>
               <div class="detail-body">
                 <h3>📝 商品描述</h3>
-                <p>去年11月购入，国行正品，一直在使用保护壳和钢化膜，屏幕和机身均无划痕。无任何维修历史，所有功能正常。<br><br>
-                电池健康度 92%，日常中度使用一天一充。配件齐全：原装充电线、包装盒、说明书、取卡针都在。额外赠送一个全新手机壳和一个未使用的钢化膜。<br><br>
-                因为换了新手机所以出售。校本部 3 号楼楼下当面交易，支持验机。价格可小刀，屠龙刀勿扰~</p>
+                <p>去年11月购入，国行正品，一直在使用保护壳和钢化膜，屏幕和机身均无划痕。无任何维修历史，所有功能正常。<br><br>电池健康度 92%，日常中度使用一天一充。配件齐全：原装充电线、包装盒、说明书、取卡针都在。额外赠送一个全新手机壳和一个未使用的钢化膜。<br><br>因为换了新手机所以出售。校本部3号楼楼下当面交易，支持验机。价格可小刀，屠龙刀勿扰~</p>
               </div>
               <div class="detail-actions">
-                <el-button type="primary" size="large" style="width:180px;">💬 联系卖家</el-button>
-                <el-button size="large" style="width:120px;">⭐ 收藏</el-button>
+                <el-button type="primary" size="large" style="min-width:180px;" @click="contact">💬 联系卖家</el-button>
+                <el-button size="large" style="min-width:110px;" @click="favorite">⭐ 收藏</el-button>
                 <div style="flex:1;"></div>
-                <el-button size="large" type="danger" plain>🚩 举报</el-button>
+                <el-button size="large" type="danger" plain @click="report">🚩 举报</el-button>
               </div>
             </div>
           </div>
@@ -124,48 +139,49 @@
 
         <div>
           <div class="side-card">
-            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">👤 发布者信息</h3>
-            <div class="seller-info">
-              <div class="seller-avatar">
-                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="">
-              </div>
+            <h3>👤 发布者信息</h3>
+            <div class="seller-row">
+              <div class="seller-avt"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop" alt=""></div>
               <div>
                 <div class="seller-name">张三同学</div>
                 <div class="seller-badge">✅ 已实名认证 · 信用良好</div>
               </div>
             </div>
-            <div class="stat-row">
+            <div class="seller-stats">
               <span>📦 发布 12 件</span>
               <span>⭐ 好评率 98%</span>
               <span>🕐 平均回复 5分钟</span>
             </div>
-            <el-button type="primary" style="width:100%;margin-bottom:8px;">💬 联系卖家</el-button>
-            <el-button style="width:100%;">👀 查看更多发布</el-button>
+            <el-button type="primary" style="width:100%;margin-bottom:8px;" @click="contact">💬 联系卖家</el-button>
+            <el-button style="width:100%;" onclick="location.href='profile.html'">👀 查看TA的发布</el-button>
           </div>
 
           <div class="side-card">
-            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px;">🎯 相关推荐</h3>
-            <a v-for="r in recommends" :key="r.id" :href="r.link" class="recommend-card">
-              <div class="rec-img"><img :src="r.image" alt=""></div>
-              <div class="rec-info">
-                <div class="rec-title">{{ r.title }}</div>
-                <div style="font-size:11px;color:#94A3B8;">{{ r.views }}次浏览</div>
+            <h3>🎯 相关推荐</h3>
+            <a v-for="r in recommends" :key="r.id" :href="r.link" class="rec-row">
+              <div class="rec-thumb"><img :src="r.image" alt=""></div>
+              <div class="rec-mid">
+                <div class="rec-name">{{ r.title }}</div>
+                <div class="rec-views">{{ r.views }} 次浏览</div>
               </div>
               <div class="rec-price">{{ r.price }}</div>
             </a>
           </div>
 
-          <div class="side-card" style="background:#FFFBEB;border:1px solid #FDE68A;">
-            <div style="font-size:13px;color:#92400E;line-height:1.8;">
-              ⚠️ <strong>交易安全提醒</strong><br>
-              · 建议选择校内公共场所当面交易<br>
-              · 贵重物品建议当场验货<br>
-              · 谨防提前转账、押金等诈骗行为<br>
-              · 发现可疑信息请及时举报
-            </div>
+          <div class="safety-box">
+            <strong>⚠️ 交易安全提醒</strong><br>
+            · 建议选择校内公共场所当面交易<br>
+            · 贵重物品建议当场验货<br>
+            · 谨防提前转账、押金等诈骗行为<br>
+            · 发现可疑信息请及时举报
           </div>
         </div>
       </div>
+    </div>
+
+    <div class="footer-bar">
+      <p>© 2026 校园轻集市 · 为校园生活而生</p>
+      <p><a href="home.html">返回首页</a> · <a href="category.html">分类浏览</a></p>
     </div>
   </div>
 
@@ -174,22 +190,27 @@
     const app = createApp({
       setup() {
         const images = ref([
-          'https://images.unsplash.com/photo-1592286927505-1def25115558?w=800&h=600&fit=crop',
-          'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=800&h=600&fit=crop',
-          'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=800&h=600&fit=crop',
+          'https://images.unsplash.com/photo-1592286927505-1def25115558?w=900&h=680&fit=crop',
+          'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=900&h=680&fit=crop',
+          'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=900&h=680&fit=crop',
+          'https://images.unsplash.com/photo-1557180295-76ee20a18ba5?w=900&h=680&fit=crop',
         ])
         const mainImage = ref(images.value[0])
         const recommends = ref([
-          { id:1, title:'Samsung S23 Ultra 256G', price:'¥3,800', views:256, image:'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=200&h=200&fit=crop', link:'item-detail.html' },
-          { id:2, title:'AirPods Pro 2代 全新', price:'¥1,200', views:189, image:'https://images.unsplash.com/photo-1588423771073-b8903fbb85b5?w=200&h=200&fit=crop', link:'item-detail.html' },
-          { id:3, title:'iPad Air 5 64G WiFi', price:'¥2,800', views:312, image:'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=200&h=200&fit=crop', link:'item-detail.html' },
-          { id:4, title:'机械键盘 Cherry 轴 青轴', price:'¥150', views:267, image:'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200&h=200&fit=crop', link:'item-detail.html' },
+          { id:1, title:'三星 S23 Ultra 256G 国行', price:'¥3,800', views:256, image:'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=200&h=200&fit=crop', link:'item-detail.html' },
+          { id:2, title:'AirPods Pro 2代 全新未拆', price:'¥1,200', views:189, image:'https://images.unsplash.com/photo-1588423771073-b8903fbb85b5?w=200&h=200&fit=crop', link:'item-detail.html' },
+          { id:3, title:'iPad Air 5 64G WiFi 版', price:'¥2,800', views:312, image:'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=200&h=200&fit=crop', link:'item-detail.html' },
+          { id:4, title:'机械键盘 Cherry 青轴 87键', price:'¥150', views:267, image:'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200&h=200&fit=crop', link:'item-detail.html' },
+          { id:5, title:'戴尔 24寸 2K IPS 显示器', price:'¥600', views:178, image:'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=200&h=200&fit=crop', link:'item-detail.html' },
         ])
-        return { images, mainImage, recommends }
+        function contact() { ElementPlus.ElMessage.success('已发送联系请求，请等待卖家回复') }
+        function favorite() { ElementPlus.ElMessage.success('⭐ 已加入收藏') }
+        function report() { ElementPlus.ElMessage.info('举报已提交，平台将尽快处理') }
+        return { images, mainImage, recommends, contact, favorite, report }
       }
     })
     app.use(ElementPlus)
     app.mount('#app')
-</script>
+  </script>
 </body>
 </html>

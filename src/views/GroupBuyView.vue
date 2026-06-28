@@ -1,127 +1,51 @@
 <script setup lang="ts">
-const types = [
-  { icon: '🛒', label: '拼单购物', desc: '一起买更便宜' },
-  { icon: '🍜', label: '拼饭搭子', desc: '一个人吃饭不如一起' },
-  { icon: '🏀', label: '运动搭子', desc: '约球约跑约健身' },
-  { icon: '📚', label: '学习搭子', desc: '组队自习互相监督' },
-]
+import { useMarketStore } from '@/stores/market'
+import { ElMessage } from 'element-plus'
+
+const store = useMarketStore()
+
+function joinGroup(g: typeof store.groupBuys[0]) {
+  ElMessage.success('🎉 你已成功加入拼单！请准时到达集合地点。')
+}
 </script>
 
 <template>
-  <div class="groupbuy-page">
-    <div class="page-header">
-      <h2>🤝 拼单搭子</h2>
-      <p class="page-subtitle">找人一起拼、一起玩、一起学</p>
-    </div>
-
-    <div class="type-grid">
-      <div v-for="t in types" :key="t.label" class="type-card">
-        <span class="type-icon">{{ t.icon }}</span>
-        <h3 class="type-label">{{ t.label }}</h3>
-        <p class="type-desc">{{ t.desc }}</p>
+  <div class="page">
+    <div class="page-hd"><h2>🤝 拼单搭子</h2><p class="sub">找人一起拼、一起玩、一起学</p></div>
+    <div class="grid">
+      <div v-for="g in store.groupBuys" :key="g.id" class="card">
+        <div class="card-img"><img :src="g.image" :alt="g.title" /></div>
+        <div class="card-body">
+          <el-tag type="success" size="small">{{ g.type }}</el-tag>
+          <div class="card-title">{{ g.title }}</div>
+          <div class="card-desc">{{ g.desc }}</div>
+          <div class="progress-box">
+            <div class="progress-hd"><span>拼单进度</span><span style="color:#059669;">{{ g.current }}/{{ g.total }} 人</span></div>
+            <el-progress :percentage="Math.round(g.current / g.total * 100)" :stroke-width="8" color="#10b981" />
+          </div>
+          <div class="card-meta">💰 {{ g.price }} · ⏰ 截止 {{ g.deadline }} · 📍 {{ g.location }}</div>
+          <el-button type="success" style="width:100%;margin-top:12px;" @click="joinGroup(g)">🤝 加入拼单</el-button>
+        </div>
       </div>
-    </div>
-
-    <div class="empty-hint">
-      <span class="empty-icon">👥</span>
-      <p>拼单搭子列表将在后续开发中接入数据</p>
+      <el-empty v-if="store.groupBuys.length === 0" description="暂无拼单信息" />
     </div>
   </div>
 </template>
 
 <style scoped>
-.groupbuy-page {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.page-header {
-  margin-bottom: 24px;
-}
-
-.page-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 8px;
-}
-
-.page-subtitle {
-  font-size: 14px;
-  color: #64748b;
-  margin: 0;
-}
-
-.type-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.type-card {
-  text-align: center;
-  padding: 28px 16px;
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-}
-
-.type-card:nth-child(1):hover { border-bottom-color: #3b82f6; }
-.type-card:nth-child(2):hover { border-bottom-color: #f97316; }
-.type-card:nth-child(3):hover { border-bottom-color: #10b981; }
-.type-card:nth-child(4):hover { border-bottom-color: #8b5cf6; }
-
-.type-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-}
-
-.type-icon {
-  font-size: 40px;
-  display: block;
-  margin-bottom: 12px;
-}
-
-.type-label {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 6px;
-}
-
-.type-desc {
-  font-size: 13px;
-  color: #64748b;
-  margin: 0;
-}
-
-.empty-hint {
-  text-align: center;
-  padding: 80px 20px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
-}
-
-.empty-icon {
-  font-size: 64px;
-  display: block;
-  margin-bottom: 16px;
-}
-
-.empty-hint p {
-  font-size: 15px;
-  color: #64748b;
-  margin: 0;
-}
-
-@media (max-width: 768px) {
-  .type-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+.page { max-width: 1200px; margin: 0 auto; }
+.page-hd { margin-bottom: 24px; }
+.page-hd h2 { font-size: 24px; font-weight: 700; margin: 0 0 8px; }
+.sub { font-size: 14px; color: #64748b; margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 18px; }
+.card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; transition: all 0.25s; }
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+.card-img { height: 180px; overflow: hidden; background: #e2e8f0; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; }
+.card-body { padding: 18px; }
+.card-title { font-size: 16px; font-weight: 600; margin: 8px 0 6px; }
+.card-desc { font-size: 13px; color: #64748b; line-height: 1.5; margin-bottom: 12px; }
+.progress-box { margin-bottom: 10px; padding: 14px; background: #f0fdf4; border-radius: 12px; }
+.progress-hd { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+.card-meta { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
 </style>
