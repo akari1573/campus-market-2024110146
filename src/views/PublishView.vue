@@ -1,99 +1,3 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useMarketStore } from '@/stores/market'
-import { ElMessage } from 'element-plus'
-
-const router = useRouter()
-const store = useMarketStore()
-
-const form = ref({
-  title: '',
-  price: 0,
-  desc: '',
-  content: '',
-  category: '',
-  location: '',
-  contact: '',
-  image: '',
-})
-
-const imagePreview = ref('')
-const uploading = ref(false)
-
-const categories = ['数码/电器', '书籍/资料', '生活用品', '文体/娱乐', '服饰/鞋包', '美妆/个护', '食品/饮料', '其他']
-
-function handleImageUpload(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0]
-  if (!file) return
-
-  if (file.size > 5 * 1024 * 1024) {
-    ElMessage.warning('图片大小不能超过5MB')
-    return
-  }
-
-  uploading.value = true
-  const reader = new FileReader()
-  reader.onload = (ev) => {
-    const base64 = ev.target?.result as string
-    form.value.image = base64
-    imagePreview.value = base64
-    uploading.value = false
-  }
-  reader.readAsDataURL(file)
-}
-
-function removeImage() {
-  form.value.image = ''
-  imagePreview.value = ''
-}
-
-function submitPublish() {
-  if (!form.value.title.trim()) {
-    ElMessage.warning('请输入商品标题')
-    return
-  }
-  if (form.value.price <= 0) {
-    ElMessage.warning('请输入有效价格')
-    return
-  }
-  if (!form.value.desc.trim()) {
-    ElMessage.warning('请输入商品简述')
-    return
-  }
-  if (!form.value.category) {
-    ElMessage.warning('请选择商品分类')
-    return
-  }
-  if (!form.value.location.trim()) {
-    ElMessage.warning('请输入交易地点')
-    return
-  }
-  if (!form.value.contact.trim()) {
-    ElMessage.warning('请输入联系方式')
-    return
-  }
-
-  store.addProduct({
-    title: form.value.title.trim(),
-    price: form.value.price,
-    desc: form.value.desc.trim(),
-    content: form.value.content.trim() || form.value.desc.trim(),
-    category: form.value.category,
-    location: form.value.location.trim(),
-    seller: store.userInfo.name,
-    contact: form.value.contact.trim(),
-    image: form.value.image,
-    publisherId: store.currentUserId,
-    tag: '二手',
-    tagType: 'primary',
-  })
-
-  ElMessage.success('🎉 商品发布成功！')
-  router.push('/list')
-}
-</script>
-
 <template>
   <div class="publish-page">
     <div class="publish-card">
@@ -154,29 +58,18 @@ function submitPublish() {
         </div>
       </div>
 
-      <div class="form-row">
-        <label class="form-label">商品简述 <span class="required">*</span></label>
-        <input
-          v-model="form.desc"
-          type="text"
-          class="form-input"
-          placeholder="一句话描述商品的亮点（将显示在列表卡片中）"
-          maxlength="100"
-        />
-      </div>
-
-      <div class="form-row">
-        <label class="form-label">详细描述</label>
-        <textarea
-          v-model="form.content"
-          class="form-textarea"
-          placeholder="详细描述商品的状态、使用时长、有无瑕疵、配件等信息..."
-          rows="5"
-          maxlength="500"
-        ></textarea>
-      </div>
-
       <div class="form-row form-row-2col">
+        <div class="form-col">
+          <label class="form-label">成色 <span class="required">*</span></label>
+          <select v-model="form.condition" class="form-input form-select">
+            <option value="" disabled>请选择成色</option>
+            <option value="全新">全新</option>
+            <option value="九成新">九成新</option>
+            <option value="八成新">八成新</option>
+            <option value="七成新">七成新</option>
+            <option value="六成新及以下">六成新及以下</option>
+          </select>
+        </div>
         <div class="form-col">
           <label class="form-label">交易地点 <span class="required">*</span></label>
           <input
@@ -186,24 +79,135 @@ function submitPublish() {
             placeholder="例如：校本部 3 号楼"
           />
         </div>
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">商品简介 <span class="required">*</span></label>
+        <input
+          v-model="form.description"
+          type="text"
+          class="form-input"
+          placeholder="一句话描述商品的亮点（将显示在列表卡片中）"
+          maxlength="100"
+        />
+      </div>
+
+      <div class="form-row form-row-2col">
         <div class="form-col">
-          <label class="form-label">联系方式 <span class="required">*</span></label>
+          <label class="form-label">发布人</label>
           <input
-            v-model="form.contact"
+            v-model="form.publisher"
             type="text"
             class="form-input"
-            placeholder="手机号 / QQ / 微信"
+            placeholder="你的昵称"
+          />
+        </div>
+        <div class="form-col">
+          <label class="form-label">发布时间</label>
+          <input
+            v-model="form.publishTime"
+            type="text"
+            class="form-input"
+            disabled
           />
         </div>
       </div>
 
       <div class="form-actions">
-        <button class="btn-submit" @click="submitPublish">🚀 立即发布</button>
+        <button class="btn-submit" :disabled="submitting" @click="submitPublish">
+          {{ submitting ? '发布中...' : '🚀 立即发布' }}
+        </button>
         <button class="btn-cancel" @click="router.back()">取消</button>
       </div>
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { createTrade } from '../api/trade'
+
+const router = useRouter()
+const submitting = ref(false)
+
+const now = new Date()
+const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+
+const form = reactive({
+  title: '',
+  price: 0,
+  category: '',
+  condition: '',
+  location: '',
+  description: '',
+  image: '',
+  publisher: '张三同学',
+  publishTime: todayStr,
+  status: 'open',
+})
+
+const imagePreview = ref('')
+const uploading = ref(false)
+const categories = ['数码/电器', '书籍/资料', '生活用品', '文体/娱乐', '服饰/鞋包', '其他']
+
+function handleImageUpload(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  if (file.size > 5 * 1024 * 1024) {
+    ElMessage.warning('图片大小不能超过5MB')
+    return
+  }
+
+  uploading.value = true
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    const base64 = ev.target?.result as string
+    form.image = base64
+    imagePreview.value = base64
+    uploading.value = false
+  }
+  reader.readAsDataURL(file)
+}
+
+function removeImage() {
+  form.image = ''
+  imagePreview.value = ''
+}
+
+async function submitPublish() {
+  if (!form.title.trim()) { ElMessage.warning('请输入商品标题'); return }
+  if (form.price <= 0) { ElMessage.warning('请输入有效价格'); return }
+  if (!form.category) { ElMessage.warning('请选择商品分类'); return }
+  if (!form.condition) { ElMessage.warning('请选择成色'); return }
+  if (!form.location.trim()) { ElMessage.warning('请输入交易地点'); return }
+  if (!form.description.trim()) { ElMessage.warning('请输入商品简介'); return }
+
+  submitting.value = true
+  try {
+    await createTrade({
+      title: form.title.trim(),
+      price: form.price,
+      category: form.category,
+      condition: form.condition,
+      location: form.location.trim(),
+      description: form.description.trim(),
+      image: form.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop',
+      publisher: form.publisher.trim() || '匿名用户',
+      publishTime: form.publishTime,
+      status: 'open',
+    })
+    ElMessage.success('🎉 商品发布成功！')
+    router.push('/trade')
+  } catch {
+    ElMessage.error('发布失败，请确认 JSON Server 已启动')
+  } finally {
+    submitting.value = false
+  }
+}
+</script>
 
 <style scoped>
 .publish-page {
@@ -278,29 +282,14 @@ function submitPublish() {
   box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
 }
 
+.form-input:disabled {
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
 .form-select {
   appearance: none;
   cursor: pointer;
-}
-
-.form-textarea {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #1e293b;
-  background: #fff;
-  outline: none;
-  resize: vertical;
-  font-family: inherit;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-sizing: border-box;
-}
-
-.form-textarea:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
 }
 
 .image-upload {
@@ -397,9 +386,14 @@ function submitPublish() {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.btn-submit:hover {
+.btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgba(16,185,129,0.35);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-cancel {

@@ -1,29 +1,6 @@
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useMarketStore } from '@/stores/market'
-
-const router = useRouter()
-const store = useMarketStore()
-const searchText = ref('')
-
-const feedItems = computed(() => [
-  ...store.products.slice(0, 4).map(p => ({ ...p, link: `/detail/${p.id}`, time: p.publishTime, priceStr: '¥' + p.price })),
-  ...store.groupBuys.slice(0, 2).map(g => ({ ...g, link: `/group-buy`, time: g.publishTime, priceStr: g.price, desc: g.desc, location: g.location, tag: '拼单', tagType: 'success' })),
-  ...store.errandTasks.slice(0, 1).map(e => ({ ...e, link: `/errand`, time: e.publishTime, priceStr: '酬谢¥' + e.reward, tag: '跑腿', tagType: 'warning', location: e.toAddr })),
-  ...store.lostFounds.slice(0, 1).map(l => ({ ...l, link: `/lost-found`, time: l.publishTime, priceStr: l.reward || '-', tag: l.type === 'lost' ? '失物' : '招领', tagType: l.type === 'lost' ? 'danger' : 'info' })),
-])
-
-const hotItems = computed(() => store.products.slice(0, 6).map(p => ({ ...p, priceStr: '¥' + p.price })))
-const stats = computed(() => ({ total: store.products.length + store.lostFounds.length + store.groupBuys.length + store.errandTasks.length, users: 1256, deals: 89, today: 48 }))
-
-function doSearch() { if (searchText.value) router.push(`/list?q=${encodeURIComponent(searchText.value)}`) }
-</script>
-
 <template>
   <div class="home">
     <div class="container">
-      <!-- Hero -->
       <div class="hero">
         <h1>🎓 你的校园好物交易平台</h1>
         <p>二手交易 · 失物招领 · 拼单搭子 · 跑腿委托 — 让校园生活更便捷、更有温度</p>
@@ -33,7 +10,6 @@ function doSearch() { if (searchText.value) router.push(`/list?q=${encodeURIComp
         </div>
       </div>
 
-      <!-- Category Chips -->
       <div class="cat-bar">
         <router-link to="/list" class="cat-chip active">📦 全部</router-link>
         <router-link to="/trade" class="cat-chip">🛒 二手交易</router-link>
@@ -44,17 +20,17 @@ function doSearch() { if (searchText.value) router.push(`/list?q=${encodeURIComp
 
       <div class="main-grid">
         <div>
-          <div v-for="item in feedItems" :key="item.id" class="feed-card" @click="router.push(item.link)">
+          <div v-for="item in feedItems" :key="item._key" class="feed-card" @click="navigateTo(item)">
             <div class="feed-img"><img :src="item.image" :alt="item.title" /></div>
             <div class="feed-body">
               <div class="feed-title">{{ item.title }}</div>
-              <div class="feed-desc">{{ item.desc }}</div>
+              <div class="feed-desc">{{ item.description || item.desc || '' }}</div>
               <div class="feed-footer">
-                <span class="feed-price">{{ item.priceStr }}</span>
+                <span class="feed-price">{{ item._priceStr }}</span>
                 <span class="feed-meta">
-                  <el-tag size="small" :type="item.tagType">{{ item.tag }}</el-tag>
+                  <el-tag size="small" :type="item._tagType">{{ item._tag }}</el-tag>
                   <span v-if="item.location">📍 {{ item.location }}</span>
-                  <span>{{ item.time }}</span>
+                  <span>{{ item.publishTime || item.eventTime }}</span>
                 </span>
               </div>
             </div>
@@ -64,19 +40,19 @@ function doSearch() { if (searchText.value) router.push(`/list?q=${encodeURIComp
         <div>
           <div class="side-card">
             <h3>🔥 热门推荐</h3>
-            <router-link v-for="(h, i) in hotItems" :key="h.id" :to="`/detail/${h.id}`" class="hot-row">
+            <router-link v-for="(t, i) in trades.slice(0, 6)" :key="t.id" :to="`/detail/${t.id}`" class="hot-row">
               <span :class="['hot-rank', `r${i + 1}`]">{{ i + 1 }}</span>
-              <span class="hot-info"><div class="hot-name">{{ h.title }}</div><div class="hot-views">{{ h.views }} 次浏览</div></span>
-              <span class="hot-price">{{ h.priceStr }}</span>
+              <span class="hot-info"><div class="hot-name">{{ t.title }}</div><div class="hot-views">¥{{ t.price }}</div></span>
+              <span class="hot-price">{{ t.condition }}</span>
             </router-link>
           </div>
           <div class="side-card">
             <h3>📊 平台数据</h3>
             <div class="stats-mini">
               <div class="box"><div class="val" style="color:#3b82f6;">{{ stats.total }}</div><div class="lbl">总信息数</div></div>
-              <div class="box"><div class="val" style="color:#10b981;">{{ stats.users }}</div><div class="lbl">活跃用户</div></div>
-              <div class="box"><div class="val" style="color:#f59e0b;">{{ stats.deals }}</div><div class="lbl">今日成交</div></div>
-              <div class="box"><div class="val" style="color:#ef4444;">{{ stats.today }}</div><div class="lbl">今日上新</div></div>
+              <div class="box"><div class="val" style="color:#10b981;">1256</div><div class="lbl">活跃用户</div></div>
+              <div class="box"><div class="val" style="color:#f59e0b;">89</div><div class="lbl">今日成交</div></div>
+              <div class="box"><div class="val" style="color:#ef4444;">48</div><div class="lbl">今日上新</div></div>
             </div>
           </div>
           <router-link to="/publish" class="publish-cta">🚀 立即发布信息</router-link>
@@ -85,6 +61,108 @@ function doSearch() { if (searchText.value) router.push(`/list?q=${encodeURIComp
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { getTrades, type TradeItem } from '../api/trade'
+import { getLostFounds, type LostFoundItem } from '../api/lostFound'
+import { getGroupBuys, type GroupBuyItem } from '../api/groupBuy'
+import { getErrands, type ErrandItem } from '../api/errand'
+
+const router = useRouter()
+const searchText = ref('')
+const trades = ref<TradeItem[]>([])
+const lostFounds = ref<LostFoundItem[]>([])
+const groupBuys = ref<GroupBuyItem[]>([])
+const errands = ref<ErrandItem[]>([])
+
+onMounted(async () => {
+  const [t, lf, gb, e] = await Promise.all([
+    getTrades(),
+    getLostFounds(),
+    getGroupBuys(),
+    getErrands(),
+  ])
+  trades.value = t.data
+  lostFounds.value = lf.data
+  groupBuys.value = gb.data
+  errands.value = e.data
+})
+
+const stats = computed(() => ({
+  total: trades.value.length + lostFounds.value.length + groupBuys.value.length + errands.value.length,
+}))
+
+interface FeedItem {
+  _key: string
+  title: string
+  description?: string
+  desc?: string
+  image: string
+  location?: string
+  publishTime?: string
+  eventTime?: string
+  _priceStr: string
+  _tag: string
+  _tagType: string
+}
+
+const feedItems = computed<FeedItem[]>(() => [
+  ...trades.value.slice(0, 4).map((t) => ({
+    _key: `trade-${t.id}`,
+    ...t,
+    _priceStr: `¥${t.price}`,
+    _tag: t.category,
+    _tagType: 'primary',
+    _link: `/detail/${t.id}`,
+  })),
+  ...groupBuys.value.slice(0, 2).map((g) => ({
+    _key: `gb-${g.id}`,
+    title: g.title,
+    description: g.description,
+    image: 'https://images.unsplash.com/photo-1558857563-b371033873b8?w=600&h=400&fit=crop',
+    location: g.location,
+    publishTime: g.deadline,
+    _priceStr: `${g.currentCount}/${g.targetCount}人`,
+    _tag: '拼单',
+    _tagType: 'success',
+    _link: '/group-buy',
+  })),
+  ...errands.value.slice(0, 1).map((e) => ({
+    _key: `er-${e.id}`,
+    title: e.title,
+    description: e.description,
+    image: 'https://images.unsplash.com/photo-1580674684081-7617fbf3d745?w=600&h=400&fit=crop',
+    location: `${e.from} → ${e.to}`,
+    publishTime: e.deadline,
+    _priceStr: `酬谢¥${e.reward}`,
+    _tag: '跑腿',
+    _tagType: 'warning',
+    _link: '/errand',
+  })),
+  ...lostFounds.value.slice(0, 1).map((lf) => ({
+    _key: `lf-${lf.id}`,
+    title: lf.title,
+    description: lf.description,
+    image: 'https://images.unsplash.com/photo-1606841837239-c5a1a4a07afc?w=600&h=400&fit=crop',
+    location: lf.location,
+    eventTime: lf.eventTime,
+    _priceStr: lf.type === 'lost' ? '失物' : '招领',
+    _tag: lf.type === 'lost' ? '失物' : '招领',
+    _tagType: lf.type === 'lost' ? 'danger' : 'info',
+    _link: '/lost-found',
+  })),
+])
+
+function navigateTo(item: FeedItem & { _link?: string }) {
+  if (item._link) router.push(item._link)
+}
+
+function doSearch() {
+  if (searchText.value) router.push(`/list?q=${encodeURIComponent(searchText.value)}`)
+}
+</script>
 
 <style scoped>
 .home { max-width: 1200px; margin: 0 auto; }

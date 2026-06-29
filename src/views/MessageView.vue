@@ -1,66 +1,10 @@
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useMarketStore } from '@/stores/market'
-import { ElMessage } from 'element-plus'
-
-const store = useMarketStore()
-
-const messages = computed(() => store.myMessages)
-const unreadCount = computed(() => store.unreadCount)
-
-const selectedMsg = ref<number | null>(null)
-const replyText = ref('')
-
-const selectedMessage = computed(() =>
-  selectedMsg.value ? messages.value.find((m) => m.id === selectedMsg.value) : null
-)
-
-function selectMessage(id: number) {
-  selectedMsg.value = id
-  store.markAsRead(id)
-}
-
-function sendReply() {
-  if (!replyText.value.trim() || !selectedMessage.value) return
-  store.addMessage({
-    from: 'user_001',
-    to: 'system',
-    content: replyText.value.trim(),
-    productTitle: selectedMessage.value.productTitle,
-    unread: false,
-    avatar: store.userInfo.avatar,
-  })
-  ElMessage.success('回复已发送')
-  replyText.value = ''
-}
-
-function refreshMessages() {
-  const newMsgs = [
-    '你好，这个商品还在吗？价格能优惠些吗？',
-    '我就在校本部，方便今天交易吗？',
-    '请问商品有什么瑕疵吗？',
-    '可以留一下具体的看货时间吗？',
-  ]
-  const randomMsg = newMsgs[Math.floor(Math.random() * newMsgs.length)] ?? '你好，请问这个商品还有吗？'
-  store.addMessage({
-    from: '买家用户',
-    to: 'user_001',
-    content: randomMsg,
-    productTitle: '二手自行车',
-    unread: true,
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
-  })
-  ElMessage.success('📩 收到一条新消息！')
-}
-</script>
-
 <template>
   <div class="message-page">
     <div class="msg-header">
       <h2>💬 消息中心</h2>
       <div class="msg-header-actions">
         <span v-if="unreadCount > 0" class="unread-badge">{{ unreadCount }}条未读</span>
-        <button class="refresh-btn" @click="refreshMessages">📩 模拟接收消息</button>
+        <button class="refresh-btn" @click="fetchMessages">🔄 刷新消息</button>
       </div>
     </div>
 
@@ -69,17 +13,16 @@ function refreshMessages() {
         <div v-if="messages.length === 0" class="msg-empty">
           <span class="empty-icon">📭</span>
           <p>暂无消息</p>
-          <p class="empty-hint">点击右上角按钮模拟接收消息</p>
         </div>
         <div
           v-for="msg in messages"
           :key="msg.id"
           class="msg-item"
           :class="{ active: selectedMsg === msg.id, unread: msg.unread }"
-          @click="selectMessage(msg.id)"
+          @click="selectMessage(msg)"
         >
           <div class="msg-item-avatar">
-            {{ msg.from === '系统' ? '📢' : '👤' }}
+            {{ msg.from.includes('系统') ? '📢' : '👤' }}
           </div>
           <div class="msg-item-content">
             <div class="msg-item-top">
@@ -108,9 +51,8 @@ function refreshMessages() {
             <div class="chat-bubble received">
               <p>{{ selectedMessage.content }}</p>
             </div>
-
             <div
-              v-for="m in messages.filter(m => m.from === 'user_001' && selectedMessage && m.productTitle === selectedMessage.productTitle && m.id > selectedMessage.id)"
+              v-for="m in repliedMessages"
               :key="m.id"
               class="chat-bubble sent"
             >
@@ -132,6 +74,68 @@ function refreshMessages() {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { getMessages, createMessage, markMessageRead, type MessageItem } from '../api/message'
+
+const messages = ref<MessageItem[]>([])
+const selectedMsg = ref<number | null>(null)
+const replyText = ref('')
+
+const selectedMessage = computed(() =>
+  selectedMsg.value ? messages.value.find((m) => m.id === selectedMsg.value) : null
+)
+
+const unreadCount = computed(() => messages.value.filter((m) => m.unread).length)
+
+const repliedMessages = computed(() =>
+  messages.value.filter(
+    (m) => m.from === 'user_001' && selectedMessage.value && m.productTitle === selectedMessage.value.productTitle
+  )
+)
+
+async function fetchMessages() {
+  const res = await getMessages({ to: 'user_001', _sort: 'id', _order: 'desc' })
+  messages.value = res.data
+}
+
+async function selectMessage(msg: MessageItem) {
+  selectedMsg.value = msg.id
+  if (msg.unread) {
+    await markMessageRead(msg.id)
+    msg.unread = false
+  }
+}
+
+async function sendReply() {
+  if (!replyText.value.trim() || !selectedMessage.value) return
+
+  await createMessage({
+    from: 'user_001',
+    to: 'system',
+    content: replyText.value.trim(),
+    productTitle: selectedMessage.value.productTitle,
+    unread: false,
+  })
+
+  messages.value.unshift({
+    id: Date.now(),
+    from: 'user_001',
+    to: 'system',
+    content: replyText.value.trim(),
+    time: new Date().toLocaleString('zh-CN'),
+    productTitle: selectedMessage.value.productTitle,
+    unread: false,
+  })
+
+  ElMessage.success('回复已发送')
+  replyText.value = ''
+}
+
+onMounted(() => fetchMessages())
+</script>
 
 <style scoped>
 .message-page {
@@ -213,12 +217,6 @@ function refreshMessages() {
   margin-bottom: 12px;
 }
 
-.empty-hint {
-  font-size: 12px;
-  color: #94a3b8;
-  margin-top: 4px;
-}
-
 .msg-item {
   display: flex;
   align-items: center;
@@ -235,14 +233,6 @@ function refreshMessages() {
 }
 
 .msg-item.active {
-  background: #eff6ff;
-}
-
-.msg-item.unread {
-  background: #fefefe;
-}
-
-.msg-item.active.unread {
   background: #eff6ff;
 }
 

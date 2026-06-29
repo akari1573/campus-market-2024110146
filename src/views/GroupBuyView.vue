@@ -13,7 +13,7 @@
         :description="item.description"
         :tag="item.type"
         :location="item.location"
-        :time="item.deadline"
+        :time="`截止 ${item.deadline}`"
       >
         <template #footer>
           <span class="progress-text">
@@ -22,6 +22,13 @@
           <span :class="['status-tag', item.status === 'open' ? 'open' : 'closed']">
             {{ item.status === 'open' ? '拼单中' : '已结束' }}
           </span>
+          <button
+            v-if="item.status === 'open' && item.currentCount < item.targetCount"
+            class="join-btn"
+            @click="joinGroup(item)"
+          >
+            🤝 加入拼单
+          </button>
         </template>
       </ItemCard>
     </div>
@@ -35,9 +42,10 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
-import { getGroupBuys, type GroupBuyItem } from '../api/groupBuy'
+import { getGroupBuys, updateGroupBuy, type GroupBuyItem } from '../api/groupBuy'
 
 const groupBuys = ref<GroupBuyItem[]>([])
 
@@ -45,6 +53,13 @@ onMounted(async () => {
   const res = await getGroupBuys()
   groupBuys.value = res.data
 })
+
+async function joinGroup(item: GroupBuyItem) {
+  const newCount = item.currentCount + 1
+  await updateGroupBuy(item.id, { currentCount: newCount })
+  item.currentCount = newCount
+  ElMessage.success('🎉 你已成功加入拼单！请准时到达集合地点。')
+}
 </script>
 
 <style scoped>
@@ -82,7 +97,7 @@ onMounted(async () => {
 }
 
 .status-tag {
-  margin-left: 12px;
+  margin-left: 8px;
   padding: 2px 10px;
   border-radius: 999px;
   font-size: 12px;
@@ -96,5 +111,22 @@ onMounted(async () => {
 .status-tag.closed {
   background: #f3f4f6;
   color: #9ca3af;
+}
+
+.join-btn {
+  margin-left: 12px;
+  padding: 4px 14px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.join-btn:hover {
+  transform: translateY(-1px);
 }
 </style>

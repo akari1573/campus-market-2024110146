@@ -12,6 +12,22 @@ export interface LostFoundItem {
   description: string
 }
 
-export function getLostFounds() {
-  return http.get<LostFoundItem[]>('/lostFounds')
+export function getLostFounds(params?: Record<string, string | number>) {
+  return http.get<LostFoundItem[]>('/lostFounds', { params })
+}
+
+export function getLostFoundById(id: number) {
+  return http.get<LostFoundItem>(`/lostFounds/${id}`)
+}
+
+export function createLostFound(data: Omit<LostFoundItem, 'id'>) {
+  return http.post<LostFoundItem>('/lostFounds', data)
+}
+
+export function updateLostFound(id: number, data: Partial<LostFoundItem>) {
+  return http.patch<LostFoundItem>(`/lostFounds/${id}`, data)
+}
+
+export function deleteLostFound(id: number) {
+  return http.delete(`/lostFounds/${id}`)
 }

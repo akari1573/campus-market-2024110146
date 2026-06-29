@@ -1,7 +1,7 @@
 {
   "trades": [
     {
-      "id": 1,
+      "id": "1",
       "title": "九成新机械键盘",
       "category": "数码配件",
       "price": 89,
@@ -14,7 +14,7 @@
       "description": "键盘使用正常，因更换设备转让。"
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "高等数学教材",
       "category": "教材资料",
       "price": 18,
@@ -27,7 +27,7 @@
       "description": "教材有少量笔记，不影响使用。"
     },
     {
-      "id": 3,
+      "id": "3",
       "title": "床上折叠桌 轻便实用",
       "category": "生活用品",
       "price": 25,
@@ -40,7 +40,7 @@
       "description": "折叠桌轻便好用，不占空间，适合宿舍使用。"
     },
     {
-      "id": 4,
+      "id": "4",
       "title": "二手自行车 26 寸变速",
       "category": "出行工具",
       "price": 200,
@@ -53,7 +53,7 @@
       "description": "变速自行车，刹车灵敏，适合校园通勤使用。"
     },
     {
-      "id": 5,
+      "id": "5",
       "title": "宿舍用小台灯 LED 护眼",
       "category": "生活用品",
       "price": 30,
@@ -66,7 +66,7 @@
       "description": "LED 护眼台灯，三档亮度调节，USB 供电方便。"
     },
     {
-      "id": 6,
+      "id": "6",
       "title": "四级真题试卷全套（含听力）",
       "category": "教材资料",
       "price": 15,
@@ -81,7 +81,7 @@
   ],
   "lostFounds": [
     {
-      "id": 1,
+      "id": "1",
       "title": "寻找黑色校园卡",
       "type": "lost",
       "itemName": "校园卡",
@@ -92,7 +92,7 @@
       "description": "校园卡卡套为黑色，内有学生证。"
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "拾到蓝色雨伞",
       "type": "found",
       "itemName": "雨伞",
@@ -103,7 +103,7 @@
       "description": "雨伞放在 A 区一楼值班室。"
     },
     {
-      "id": 3,
+      "id": "3",
       "title": "丢失银色 U 盘 32G",
       "type": "lost",
       "itemName": "U 盘",
@@ -114,7 +114,7 @@
       "description": "银色金属外壳 U 盘，32G 容量，内有课程设计资料。"
     },
     {
-      "id": 4,
+      "id": "4",
       "title": "拾到一副黑色蓝牙耳机",
       "type": "found",
       "itemName": "蓝牙耳机",
@@ -125,7 +125,7 @@
       "description": "黑色入耳式蓝牙耳机，品牌为漫步者，已交到体育馆值班室。"
     },
     {
-      "id": 5,
+      "id": "5",
       "title": "丢失学生证（李同学）",
       "type": "lost",
       "itemName": "学生证",
@@ -136,7 +136,7 @@
       "description": "学生证姓名李某某，计算机学院 2023 级，丢失在外套口袋里。"
     },
     {
-      "id": 6,
+      "id": "6",
       "title": "拾到一本笔记本",
       "type": "found",
       "itemName": "笔记本",
@@ -149,11 +149,11 @@
   ],
   "groupBuys": [
     {
-      "id": 1,
+      "id": "1",
       "title": "周五晚火锅拼单",
       "type": "拼餐",
       "targetCount": 6,
-      "currentCount": 3,
+      "currentCount": 4,
       "deadline": "2026-06-05 17:00",
       "location": "学校南门",
       "publisher": "计算机学院学生",
@@ -161,7 +161,7 @@
       "description": "AA 制，人数够后统一预约。"
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "四六级资料团购",
       "type": "学习资料",
       "targetCount": 10,
@@ -173,7 +173,7 @@
       "description": "达到人数后统一下单。"
     },
     {
-      "id": 3,
+      "id": "3",
       "title": "周末羽毛球搭子",
       "type": "运动搭子",
       "targetCount": 4,
@@ -185,7 +185,7 @@
       "description": "找 2 个球友周末一起打羽毛球，水平不限。"
     },
     {
-      "id": 4,
+      "id": "4",
       "title": "毕业季宿舍团购清洁服务",
       "type": "生活服务",
       "targetCount": 5,
@@ -197,7 +197,7 @@
       "description": "毕业季宿舍深度清洁，5 间起团，每间 50 元。"
     },
     {
-      "id": 5,
+      "id": "5",
       "title": "组团报名驾校 VIP 班",
       "type": "学习培训",
       "targetCount": 8,
@@ -209,7 +209,7 @@
       "description": "8 人团报每人优惠 300 元，含科二科三补考各一次。"
     },
     {
-      "id": 6,
+      "id": "6",
       "title": "拼购宿舍零食大礼包",
       "type": "拼单购物",
       "targetCount": 3,
@@ -221,9 +221,65 @@
       "description": "三只松鼠大礼包拼单，3 人拼享 7 折，人均 45 元。"
     }
   ],
+  "messages": [
+    {
+      "id": "1",
+      "from": "李同学",
+      "to": "user_001",
+      "content": "你好，请问自行车还在吗？价格能优惠些吗？",
+      "time": "2026-06-28 10:30",
+      "productTitle": "二手自行车",
+      "unread": true
+    },
+    {
+      "id": "2",
+      "from": "王同学",
+      "to": "user_001",
+      "content": "机械键盘200元出吗？我就在校本部可以当面来看。",
+      "time": "2026-06-28 11:15",
+      "productTitle": "机械键盘",
+      "unread": true
+    },
+    {
+      "id": "3",
+      "from": "系统通知",
+      "to": "user_001",
+      "content": "欢迎来到校园轻集市！你发布的商品已有328次浏览。",
+      "time": "2026-06-20 09:00",
+      "productTitle": "平台通知",
+      "unread": false
+    },
+    {
+      "id": "4",
+      "from": "赵同学",
+      "to": "user_001",
+      "content": "折叠桌还在吗，可以便宜点吗？我就在隔壁楼随时可以过来。",
+      "time": "2026-06-27 14:20",
+      "productTitle": "床上折叠桌",
+      "unread": true
+    },
+    {
+      "id": "5",
+      "from": "拼单群聊-奶茶",
+      "to": "user_001",
+      "content": "王同学：我确认参加，选伯牙绝弦～今天下午见！",
+      "time": "2026-06-26 18:00",
+      "productTitle": "霸王茶姬拼单",
+      "unread": false
+    },
+    {
+      "id": "6",
+      "from": "跑腿接单-小刘",
+      "to": "user_001",
+      "content": "好的，我马上去西门菜鸟驿站取，大概15分钟送到6栋。",
+      "time": "2026-06-26 15:30",
+      "productTitle": "取快递任务",
+      "unread": false
+    }
+  ],
   "errands": [
     {
-      "id": 1,
+      "id": "1",
       "title": "帮取快递到宿舍楼下",
       "taskType": "取快递",
       "reward": 3,
@@ -231,11 +287,11 @@
       "to": "西区 5 栋",
       "deadline": "2026-06-03 19:00",
       "publisher": "西区学生",
-      "status": "open",
+      "status": "taken",
       "description": "快递较轻，送到宿舍楼下即可。"
     },
     {
-      "id": 2,
+      "id": "2",
       "title": "帮买一份晚餐",
       "taskType": "代买",
       "reward": 5,
@@ -247,7 +303,7 @@
       "description": "需要在 18:30 前送到。"
     },
     {
-      "id": 3,
+      "id": "3",
       "title": "代打印课程设计报告",
       "taskType": "代办事务",
       "reward": 2,
@@ -259,7 +315,7 @@
       "description": "PDF 已发打印室，15 页双面打印装订。"
     },
     {
-      "id": 4,
+      "id": "4",
       "title": "帮忙搬宿舍行李",
       "taskType": "校园跑腿",
       "reward": 20,
@@ -271,7 +327,7 @@
       "description": "行李不多，大概 3 个箱子加 1 个编织袋，需要推车。"
     },
     {
-      "id": 5,
+      "id": "5",
       "title": "快递站寄件代送",
       "taskType": "取快递",
       "reward": 3,
@@ -283,7 +339,7 @@
       "description": "帮忙把退货包裹从快递站送到校外快递网点。"
     },
     {
-      "id": 6,
+      "id": "6",
       "title": "代买感冒药",
       "taskType": "代买",
       "reward": 6,
@@ -294,5 +350,6 @@
       "status": "open",
       "description": "感冒药和退烧药各一盒，送到宿舍敲门即可。"
     }
-  ]
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

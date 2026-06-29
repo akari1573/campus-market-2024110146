@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import AppNav from './AppNav.vue'
-import { useMarketStore } from '@/stores/market'
 import { useRouter } from 'vue-router'
 
-const store = useMarketStore()
 const router = useRouter()
 </script>
 

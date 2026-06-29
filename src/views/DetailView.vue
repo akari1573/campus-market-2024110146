@@ -1,22 +1,3 @@
-<script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router'
-import { useMarketStore } from '@/stores/market'
-import { computed } from 'vue'
-import { ElMessage } from 'element-plus'
-
-const route = useRoute()
-const router = useRouter()
-const store = useMarketStore()
-const id = Number(route.params.id)
-const detail = computed(() => store.getProductById(id))
-if (detail.value) store.incrementViews(id)
-
-const related = computed(() => store.products.filter(p => p.id !== id).slice(0, 4))
-
-function contactSeller() { if (detail.value) ElMessage.success(`已向卖家 ${detail.value.seller} 发送消息（联系方式：${detail.value.contact}）`) }
-function addFavorite() { ElMessage.success('⭐ 已加入收藏') }
-</script>
-
 <template>
   <div class="page">
     <div class="breadcrumb">
@@ -25,7 +6,9 @@ function addFavorite() { ElMessage.success('⭐ 已加入收藏') }
       <span class="current">{{ detail?.title || '商品详情' }}</span>
     </div>
 
-    <div v-if="!detail" class="not-found">
+    <div v-if="loading" class="loading-state">加载中...</div>
+
+    <div v-else-if="!detail" class="not-found">
       <el-empty description="商品未找到"><el-button type="primary" @click="router.push('/list')">返回列表</el-button></el-empty>
     </div>
 
@@ -39,21 +22,22 @@ function addFavorite() { ElMessage.success('⭐ 已加入收藏') }
               <div class="dt-price">¥{{ detail.price }} <span class="orig">原价 ¥{{ Math.round(detail.price * 1.4) }}</span></div>
               <div class="dt-tags">
                 <el-tag type="primary">{{ detail.category }}</el-tag>
-                <el-tag>{{ detail.tag }}</el-tag>
-                <span class="views">👁 {{ detail.views }}次 · 🕐 {{ detail.publishTime }}</span>
+                <el-tag :type="detail.status === 'open' ? 'success' : 'info'">{{ detail.status === 'open' ? '在售' : '已售出' }}</el-tag>
+                <span class="views">🕐 {{ detail.publishTime }}</span>
               </div>
               <div class="dt-meta">
                 <div class="meta-item"><span class="lbl">📍 交易地点：</span><span class="val">{{ detail.location }}</span></div>
-                <div class="meta-item"><span class="lbl">📱 联系方式：</span><span class="val">{{ detail.contact }}</span></div>
-                <div class="meta-item"><span class="lbl">💳 交易方式：</span><span class="val">当面交易 / 可小刀</span></div>
+                <div class="meta-item"><span class="lbl">👤 发布人：</span><span class="val">{{ detail.publisher }}</span></div>
+                <div class="meta-item"><span class="lbl">📦 成色：</span><span class="val">{{ detail.condition }}</span></div>
                 <div class="meta-item"><span class="lbl">🆔 编号：</span><span class="val">SH00{{ detail.id }}</span></div>
               </div>
-              <div class="dt-body"><h3>📝 商品描述</h3><p>{{ detail.content }}</p></div>
+              <div class="dt-body"><h3>📝 商品描述</h3><p>{{ detail.description }}</p></div>
               <div class="dt-actions">
                 <el-button type="primary" size="large" @click="contactSeller">💬 联系卖家</el-button>
                 <el-button size="large" @click="addFavorite">⭐ 收藏</el-button>
                 <div style="flex:1;" />
-                <el-button size="large" type="danger" plain>🚩 举报</el-button>
+                <el-button v-if="detail.status === 'open'" size="large" type="success" @click="markAsSold">✅ 标记已售</el-button>
+                <el-button size="large" type="danger" plain @click="removeItem">🗑️ 删除</el-button>
               </div>
             </div>
           </div>
@@ -62,19 +46,10 @@ function addFavorite() { ElMessage.success('⭐ 已加入收藏') }
           <div class="side-card">
             <h3>👤 卖家信息</h3>
             <div class="seller-row">
-              <div class="seller-avt"><img :src="store.userInfo.avatar" alt="" /></div>
-              <div><div class="seller-name">{{ detail.seller }}</div><div class="seller-badge">✅ 已实名 · 信用良好</div></div>
+              <div class="seller-avt"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=220&h=220&fit=crop" alt="" /></div>
+              <div><div class="seller-name">{{ detail.publisher }}</div><div class="seller-badge">✅ 已实名 · 信用良好</div></div>
             </div>
             <el-button type="primary" style="width:100%;margin-bottom:8px;" @click="contactSeller">💬 联系卖家</el-button>
-            <el-button style="width:100%;" @click="router.push('/profile')">👀 查看TA的资料</el-button>
-          </div>
-          <div class="side-card">
-            <h3>🎯 相关推荐</h3>
-            <router-link v-for="r in related" :key="r.id" :to="`/detail/${r.id}`" class="rec-row">
-              <div class="rec-thumb"><img :src="r.image" alt="" /></div>
-              <div class="rec-mid"><div class="rec-name">{{ r.title }}</div><div class="rec-views">{{ r.views }}次浏览</div></div>
-              <div class="rec-price">¥{{ r.price }}</div>
-            </router-link>
           </div>
           <div class="safety-box">
             <strong>⚠️ 交易安全提醒</strong><br>
@@ -86,12 +61,66 @@ function addFavorite() { ElMessage.success('⭐ 已加入收藏') }
   </div>
 </template>
 
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getTradeById, updateTrade, deleteTrade, type TradeItem } from '../api/trade'
+
+const route = useRoute()
+const router = useRouter()
+const id = Number(route.params.id)
+const detail = ref<TradeItem | null>(null)
+const loading = ref(true)
+
+onMounted(async () => {
+  try {
+    const res = await getTradeById(id)
+    detail.value = res.data
+  } catch {
+    detail.value = null
+  } finally {
+    loading.value = false
+  }
+})
+
+function contactSeller() {
+  if (detail.value) {
+    ElMessage.success(`已向卖家 ${detail.value.publisher} 发送消息`)
+  }
+}
+
+function addFavorite() {
+  ElMessage.success('⭐ 已加入收藏')
+}
+
+async function markAsSold() {
+  if (!detail.value) return
+  await updateTrade(detail.value.id, { status: 'closed' })
+  detail.value.status = 'closed'
+  ElMessage.success('该商品已标记为已售出')
+}
+
+async function removeItem() {
+  if (!detail.value) return
+  try {
+    await ElMessageBox.confirm('确定要删除该商品吗？此操作不可撤销。', '确认删除', { type: 'warning' })
+    await deleteTrade(detail.value.id)
+    ElMessage.success('商品已删除')
+    router.push('/list')
+  } catch {
+    // 用户取消
+  }
+}
+</script>
+
 <style scoped>
 .page { max-width: 1240px; margin: 0 auto; }
 .breadcrumb { margin-bottom: 20px; font-size: 13px; color: #64748b; display: flex; gap: 6px; align-items: center; }
 .breadcrumb a { color: #3b82f6; text-decoration: none; }
 .sep { color: #cbd5e1; }
 .current { color: #1e293b; font-weight: 500; }
+.loading-state { text-align: center; padding: 80px; color: #64748b; font-size: 16px; }
 .not-found { text-align: center; padding: 80px; }
 .detail-grid { display: grid; grid-template-columns: 1fr 380px; gap: 24px; }
 .main-card { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 1px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; }
@@ -118,14 +147,5 @@ function addFavorite() { ElMessage.success('⭐ 已加入收藏') }
 .seller-avt img { width: 100%; height: 100%; object-fit: cover; }
 .seller-name { font-size: 16px; font-weight: 600; }
 .seller-badge { font-size: 12px; color: #10b981; }
-.rec-row { display: flex; gap: 10px; padding: 11px 0; border-bottom: 1px solid #f8fafc; text-decoration: none; color: inherit; transition: color 0.2s; }
-.rec-row:last-child { border-bottom: none; }
-.rec-row:hover { color: #3b82f6; }
-.rec-thumb { width: 56px; height: 56px; border-radius: 10px; overflow: hidden; background: #e2e8f0; flex-shrink: 0; }
-.rec-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.rec-mid { flex: 1; min-width: 0; }
-.rec-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rec-views { font-size: 11px; color: #94a3b8; }
-.rec-price { font-size: 14px; font-weight: 700; color: #ef4444; white-space: nowrap; }
 .safety-box { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 16px; font-size: 13px; color: #9a3412; line-height: 1.9; }
 </style>
