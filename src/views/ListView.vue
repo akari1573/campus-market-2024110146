@@ -1,20 +1,20 @@
 <template>
   <div class="page">
-    <div class="page-hd"><h2>🛍️ 全部商品</h2><span class="total">共 {{ total }} 件</span></div>
+    <div class="page-hd"><h2>🛍️ 全部商品</h2><span class="total">共 {{ filtered.length }} 件</span></div>
     <div class="filter-card">
-      <el-input v-model="searchText" placeholder="搜索商品..." clearable size="default" style="width:260px;" @clear="fetchData" @keyup.enter="fetchData"><template #prefix>🔍</template></el-input>
-      <el-select v-model="filterCat" size="default" style="width:150px;" @change="fetchData">
+      <el-input v-model="searchText" placeholder="搜索商品名称或描述..." clearable size="default" style="width:260px;"><template #prefix>🔍</template></el-input>
+      <el-select v-model="filterCat" size="default" style="width:150px;">
         <el-option label="全部分类" value="" />
         <el-option v-for="c in categories" :key="c" :label="c" :value="c" />
       </el-select>
-      <el-select v-model="sortKey" size="default" style="width:150px;" @change="fetchData">
-        <el-option label="最新发布" value="id" />
-        <el-option label="价格低到高" value="price" />
+      <el-select v-model="sortKey" size="default" style="width:150px;">
+        <el-option label="最新发布" value="id_desc" />
+        <el-option label="价格低到高" value="price_asc" />
         <el-option label="价格高到低" value="price_desc" />
       </el-select>
     </div>
     <div class="product-grid">
-      <div v-for="p in items" :key="p.id" class="product-card" @click="goDetail(p.id)">
+      <div v-for="p in paged" :key="p.id" class="product-card" @click="goDetail(p.id)">
         <div class="card-img"><img :src="p.image" :alt="p.title" /></div>
         <div class="card-body">
           <div class="card-title">{{ p.title }}</div>
@@ -25,63 +25,69 @@
           </div>
         </div>
       </div>
-      <el-empty v-if="items.length === 0" description="没有找到匹配的商品" />
+      <el-empty v-if="filtered.length === 0" description="没有找到匹配的商品" />
     </div>
-    <div class="pagination" v-if="total > pageSize">
-      <el-pagination background layout="prev, pager, next" :total="total" :page-size="pageSize" v-model:current-page="currentPage" @current-change="fetchData" />
+    <div class="pagination" v-if="filtered.length > pageSize">
+      <el-pagination background layout="prev, pager, next" :total="filtered.length" :page-size="pageSize" v-model:current-page="currentPage" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getTrades, type TradeItem } from '../api/trade'
 
 const router = useRouter()
-const items = ref<TradeItem[]>([])
-const total = ref(0)
+const allItems = ref<TradeItem[]>([])
 const currentPage = ref(1)
 const pageSize = 8
 const searchText = ref('')
 const filterCat = ref('')
-const sortKey = ref('id')
+const sortKey = ref('id_desc')
 
-const categories = ['数码/电器', '书籍/资料', '生活用品', '文体/娱乐', '服饰/鞋包', '其他']
+const categories = ['数码配件', '教材资料', '生活用品', '出行工具']
 
-async function fetchData() {
-  const params: Record<string, string | number> = {
-    _page: currentPage.value,
-    _limit: pageSize,
-  }
+const filtered = computed(() => {
+  let items = [...allItems.value]
 
   if (searchText.value) {
-    params.q = searchText.value
-  }
-  if (filterCat.value) {
-    params.category = filterCat.value
-  }
-  if (sortKey.value === 'price') {
-    params._sort = 'price'
-    params._order = 'asc'
-  } else if (sortKey.value === 'price_desc') {
-    params._sort = 'price'
-    params._order = 'desc'
-  } else {
-    params._sort = 'id'
-    params._order = 'desc'
+    const q = searchText.value.toLowerCase()
+    items = items.filter(
+      (i) =>
+        i.title.toLowerCase().includes(q) ||
+        i.description.toLowerCase().includes(q),
+    )
   }
 
-  const res = await getTrades(params)
-  items.value = res.data
-  total.value = Number(res.headers['x-total-count'] || res.data.length)
-}
+  if (filterCat.value) {
+    items = items.filter((i) => i.category === filterCat.value)
+  }
+
+  if (sortKey.value === 'price_asc') {
+    items.sort((a, b) => a.price - b.price)
+  } else if (sortKey.value === 'price_desc') {
+    items.sort((a, b) => b.price - a.price)
+  } else {
+    items.sort((a, b) => Number(b.id) - Number(a.id))
+  }
+
+  return items
+})
+
+const paged = computed(() => {
+  const start = (currentPage.value - 1) * pageSize
+  return filtered.value.slice(start, start + pageSize)
+})
 
 function goDetail(id: number) {
   router.push(`/detail/${id}`)
 }
 
-onMounted(() => fetchData())
+onMounted(async () => {
+  const res = await getTrades()
+  allItems.value = res.data
+})
 </script>
 
 <style scoped>

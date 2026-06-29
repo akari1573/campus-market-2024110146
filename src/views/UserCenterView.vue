@@ -1,43 +1,22 @@
-<script setup lang="ts">
-import { useMarketStore } from '@/stores/market'
-import { useRouter } from 'vue-router'
-import { computed } from 'vue'
-
-const store = useMarketStore()
-const router = useRouter()
-
-const stats = computed(() => [
-  { label: '我的发布', value: store.myProducts.length, color: '#3b82f6' },
-  { label: '我的收藏', value: 12, color: '#10b981' },
-  { label: '总浏览量', value: store.myProducts.reduce((s, p) => s + p.views, 0), color: '#f59e0b' },
-  { label: '已成交', value: 2, color: '#ef4444' },
-])
-
-const activities = [
-  { text: '你发布的"二手自行车"收到一条新消息', time: '30分钟前', color: '#10b981' },
-  { text: '"机械键盘"被李同学收藏', time: '2小时前', color: '#3b82f6' },
-  { text: '你的"床上折叠桌"已有89次浏览', time: '5小时前', color: '#f59e0b' },
-  { text: '你发布了新商品"Kindle Paperwhite 4"', time: '3天前', color: '#94a3b8' },
-]
-</script>
-
 <template>
   <div class="page">
+    <!-- Profile -->
     <div class="profile-card">
       <div class="banner" />
       <div class="profile-info">
-        <div class="avt-wrap"><img :src="store.userInfo.avatar" alt="" /></div>
+        <div class="avt-wrap"><img :src="profile.avatar" alt="" /></div>
         <div class="user-text">
-          <div class="user-name">{{ store.userInfo.name }} <el-tag size="small" type="success">✅ 已认证</el-tag></div>
-          <div class="user-sign">{{ store.userInfo.signature }} · {{ store.userInfo.college }}</div>
+          <div class="user-name">{{ profile.name }} <el-tag size="small" type="success">✅ 已认证</el-tag></div>
+          <div class="user-sign">{{ profile.signature }} · {{ profile.college }}</div>
           <div class="user-detail">
-            <span>📱 {{ store.userInfo.phone }}</span><span>🏫 {{ store.userInfo.campus }}</span><span>🏠 {{ store.userInfo.dorm }}</span><span>⭐ 信用良好</span>
+            <span>📱 {{ profile.phone }}</span><span>🏫 {{ profile.campus }}</span><span>🏠 {{ profile.dorm }}</span>
           </div>
         </div>
-        <el-button @click="router.push('/profile')">✏️ 编辑资料</el-button>
+        <el-button @click="showEditDialog = true">✏️ 编辑资料</el-button>
       </div>
     </div>
 
+    <!-- Stats -->
     <div class="stats-row">
       <div v-for="s in stats" :key="s.label" class="stat-card">
         <div class="stat-num" :style="{ color: s.color }">{{ s.value }}</div>
@@ -45,25 +24,257 @@ const activities = [
       </div>
     </div>
 
-    <div class="menu-grid">
-      <div class="menu-item" @click="router.push('/profile')"><span class="menu-icon">📋</span><span class="menu-label">我的发布</span></div>
-      <div class="menu-item"><span class="menu-icon">⭐</span><span class="menu-label">我的收藏</span></div>
-      <div class="menu-item" @click="router.push('/message')"><span class="menu-icon">💬</span><span class="menu-label">我的消息</span></div>
-      <div class="menu-item"><span class="menu-icon">⚙️</span><span class="menu-label">账号设置</span></div>
-    </div>
-
-    <div class="activity-card">
-      <h3>📌 最近动态</h3>
-      <div v-for="(a, i) in activities" :key="i" class="act-item">
-        <div class="act-dot" :style="{ background: a.color }" />
-        <div class="act-text">{{ a.text }}</div><span class="act-time">{{ a.time }}</span>
+    <!-- My Orders -->
+    <div v-if="orderItems.length > 0" class="section-card">
+      <h3>📦 我的订单</h3>
+      <div class="order-list">
+        <div v-for="o in orderItems" :key="o._key" class="order-item" @click="goToOrder(o)">
+          <span class="order-type">{{ o._typeLabel }}</span>
+          <span class="order-title">{{ o.title || o._title }}</span>
+          <span class="order-price">{{ o._price }}</span>
+          <span class="order-status">{{ o._status }}</span>
+        </div>
       </div>
     </div>
+
+    <!-- Menu -->
+    <div class="menu-grid">
+      <div class="menu-item" @click="showMyPublished = !showMyPublished">
+        <span class="menu-icon">📋</span><span class="menu-label">我的发布</span>
+        <span class="menu-count">{{ myPublished.length }}件</span>
+      </div>
+      <div class="menu-item" @click="showFavorites = !showFavorites">
+        <span class="menu-icon">⭐</span><span class="menu-label">我的收藏</span>
+        <span class="menu-count">{{ favorites.length }}件</span>
+      </div>
+      <div class="menu-item" @click="router.push('/message')">
+        <span class="menu-icon">💬</span><span class="menu-label">我的消息</span>
+      </div>
+      <div class="menu-item" @click="showEditDialog = true">
+        <span class="menu-icon">⚙️</span><span class="menu-label">账号设置</span>
+      </div>
+    </div>
+
+    <!-- My Published List -->
+    <div v-if="showMyPublished" class="section-card">
+      <h3>📋 我发布的商品 <button class="section-close" @click="showMyPublished = false">✕</button></h3>
+      <div v-if="myPublished.length === 0" class="section-empty">暂无发布</div>
+      <div v-for="p in myPublished" :key="p.id" class="list-row">
+        <span class="list-title">{{ p.title }}</span>
+        <span class="list-meta">¥{{ p.price }} · {{ p.condition }}</span>
+        <span :class="['list-status', p.status]">{{ p.status === 'open' ? '在售' : '已售' }}</span>
+        <button class="list-action" @click="markItemSold(p)">标记已售</button>
+        <button class="list-action danger" @click="deleteMyItem(p.id)">删除</button>
+      </div>
+    </div>
+
+    <!-- Favorites -->
+    <div v-if="showFavorites" class="section-card">
+      <h3>⭐ 我的收藏 <button class="section-close" @click="showFavorites = false">✕</button></h3>
+      <div v-if="favorites.length === 0" class="section-empty">
+        暂无收藏，去 <router-link to="/trade">二手交易</router-link> 逛逛吧
+      </div>
+      <div v-for="f in favoriteItems" :key="f.id" class="list-row">
+        <span class="list-title">{{ f.title }}</span>
+        <span class="list-meta">¥{{ f.price }}</span>
+        <button class="list-action" @click="router.push(`/detail/${f.id}`)">查看</button>
+        <button class="list-action danger" @click="removeFavorite(f.id)">取消收藏</button>
+      </div>
+    </div>
+
+    <!-- Account Settings Dialog -->
+    <el-dialog v-model="showEditDialog" title="编辑资料" width="480px">
+      <div class="edit-form">
+        <label>昵称</label>
+        <input v-model="editForm.name" class="form-input" />
+        <label>手机号</label>
+        <input v-model="editForm.phone" class="form-input" />
+        <label>校区</label>
+        <input v-model="editForm.campus" class="form-input" />
+        <label>宿舍</label>
+        <input v-model="editForm.dorm" class="form-input" />
+        <label>学院</label>
+        <input v-model="editForm.college" class="form-input" />
+        <label>个性签名</label>
+        <input v-model="editForm.signature" class="form-input" />
+      </div>
+      <template #footer>
+        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button type="primary" @click="saveProfile">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getTrades, updateTrade, deleteTrade, type TradeItem } from '../api/trade'
+import { getGroupBuys, type GroupBuyItem } from '../api/groupBuy'
+import { getErrands, type ErrandItem } from '../api/errand'
+
+const router = useRouter()
+const currentUser = '张三同学'
+
+// Profile
+const profile = reactive({
+  name: currentUser,
+  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=220&h=220&fit=crop',
+  phone: '138xxxx1234',
+  campus: '校本部',
+  dorm: '3号楼 502',
+  college: '计算机学院 大三',
+  signature: '热爱生活，喜欢分享',
+})
+
+const showEditDialog = ref(false)
+const editForm = reactive({ ...profile })
+
+function saveProfile() {
+  Object.assign(profile, { ...editForm })
+  localStorage.setItem('cm_user_profile', JSON.stringify({ ...profile }))
+  showEditDialog.value = false
+  ElMessage.success('资料已更新')
+}
+
+// Load saved profile
+function loadProfile() {
+  try {
+    const saved = localStorage.getItem('cm_user_profile')
+    if (saved) Object.assign(profile, JSON.parse(saved))
+  } catch { /* ignore */ }
+}
+
+// Published
+const allTrades = ref<TradeItem[]>([])
+const showMyPublished = ref(false)
+
+const myPublished = computed(() =>
+  allTrades.value.filter((t) => t.publisher === profile.name)
+)
+
+async function markItemSold(item: TradeItem) {
+  await updateTrade(item.id, { status: 'closed' })
+  item.status = 'closed'
+  ElMessage.success('已标记为已售')
+}
+
+async function deleteMyItem(id: number) {
+  try {
+    await ElMessageBox.confirm('确定删除？', '确认', { type: 'warning' })
+    await deleteTrade(id)
+    allTrades.value = allTrades.value.filter((t) => t.id !== id)
+    ElMessage.success('已删除')
+  } catch { /* cancelled */ }
+}
+
+// Favorites
+const showFavorites = ref(false)
+const favorites = ref<number[]>(loadFavorites())
+
+function loadFavorites(): number[] {
+  try { return JSON.parse(localStorage.getItem('cm_favorites') || '[]') } catch { return [] }
+}
+
+function saveFavorites() {
+  localStorage.setItem('cm_favorites', JSON.stringify(favorites.value))
+}
+
+function removeFavorite(id: number) {
+  favorites.value = favorites.value.filter((f) => f !== id)
+  saveFavorites()
+  ElMessage.success('已取消收藏')
+}
+
+const favoriteItems = computed(() =>
+  allTrades.value.filter((t) => favorites.value.includes(t.id))
+)
+
+// My Orders
+const allGroupBuys = ref<GroupBuyItem[]>([])
+const allErrands = ref<ErrandItem[]>([])
+const joinedBuyIds = ref<number[]>(loadIds('cm_orders_groupbuys'))
+const takenErrandIds = ref<number[]>(loadIds('cm_orders_errands'))
+
+function loadIds(key: string): number[] {
+  try { return JSON.parse(localStorage.getItem(key) || '[]') } catch { return [] }
+}
+
+interface OrderItem {
+  _key: string
+  title?: string
+  _title: string
+  _price: string
+  _status: string
+  _typeLabel: string
+  _link: string
+}
+
+const orderItems = computed<OrderItem[]>(() => [
+  ...allGroupBuys.value
+    .filter((g) => joinedBuyIds.value.includes(g.id))
+    .map((g) => ({
+      _key: `gb-${g.id}`,
+      title: g.title,
+      _title: g.title,
+      _price: `${g.currentCount}/${g.targetCount}人`,
+      _status: g.status === 'open' ? '进行中' : '已结束',
+      _typeLabel: '拼单',
+      _link: '/group-buy',
+    })),
+  ...allErrands.value
+    .filter((e) => takenErrandIds.value.includes(e.id))
+    .map((e) => ({
+      _key: `er-${e.id}`,
+      title: e.title,
+      _title: e.title,
+      _price: `¥${e.reward}`,
+      _status: e.status === 'open' ? '待完成' : e.status === 'taken' ? '进行中' : '已完成',
+      _typeLabel: '跑腿',
+      _link: '/errand',
+    })),
+  ...allTrades.value
+    .filter((t) => t.status === 'closed' && t.publisher === profile.name)
+    .map((t) => ({
+      _key: `td-${t.id}`,
+      title: t.title,
+      _title: t.title,
+      _price: `¥${t.price}`,
+      _status: '已售出',
+      _typeLabel: '交易',
+      _link: `/detail/${t.id}`,
+    })),
+])
+
+function goToOrder(o: OrderItem) {
+  router.push(o._link)
+}
+
+// Stats
+const stats = computed(() => [
+  { label: '我的发布', value: myPublished.value.length, color: '#3b82f6' },
+  { label: '我的收藏', value: favorites.value.length, color: '#10b981' },
+  { label: '我的订单', value: orderItems.value.length, color: '#f59e0b' },
+  { label: '已成交', value: allTrades.value.filter((t) => t.publisher === profile.name && t.status === 'closed').length, color: '#ef4444' },
+])
+
+onMounted(async () => {
+  loadProfile()
+  const [t, gb, e] = await Promise.all([
+    getTrades(),
+    getGroupBuys(),
+    getErrands(),
+  ])
+  allTrades.value = t.data
+  allGroupBuys.value = gb.data
+  allErrands.value = e.data
+})
+</script>
+
 <style scoped>
 .page { max-width: 1040px; margin: 0 auto; }
+
 .profile-card { background: #fff; border-radius: 18px; box-shadow: 0 1px 8px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 24px; border: 1px solid #f1f5f9; }
 .banner { height: 140px; background: linear-gradient(135deg, #f97316, #ea580c); }
 .profile-info { display: flex; align-items: flex-end; gap: 24px; padding: 0 30px 26px; margin-top: -60px; }
@@ -73,20 +284,46 @@ const activities = [
 .user-name { font-size: 24px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .user-sign { font-size: 13px; color: #64748b; margin-bottom: 6px; }
 .user-detail { font-size: 13px; color: #475569; display: flex; gap: 18px; flex-wrap: wrap; }
+
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
 .stat-card { background: #fff; border-radius: 16px; padding: 22px; text-align: center; box-shadow: 0 1px 6px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
 .stat-num { font-size: 30px; font-weight: 800; }
 .stat-label { font-size: 12px; color: #64748b; margin-top: 4px; }
+
+.section-card { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 1px 6px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; margin-bottom: 20px; }
+.section-card h3 { font-size: 17px; font-weight: 700; margin: 0 0 16px; display: flex; align-items: center; justify-content: space-between; }
+.section-close { background: transparent; border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 10px; cursor: pointer; color: #64748b; font-size: 13px; }
+.section-empty { color: #94a3b8; text-align: center; padding: 24px; font-size: 13px; }
+.section-empty a { color: #3b82f6; }
+
+.order-list { display: flex; flex-direction: column; gap: 8px; }
+.order-item { display: flex; align-items: center; gap: 14px; padding: 14px; background: #f8fafc; border-radius: 10px; cursor: pointer; transition: background 0.2s; }
+.order-item:hover { background: #eff6ff; }
+.order-type { padding: 3px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #eff6ff; color: #2563eb; flex-shrink: 0; }
+.order-title { flex: 1; font-size: 14px; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.order-price { font-size: 14px; font-weight: 600; color: #ef4444; flex-shrink: 0; }
+.order-status { font-size: 12px; color: #64748b; flex-shrink: 0; }
+
+.list-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+.list-row:last-child { border-bottom: none; }
+.list-title { flex: 1; font-size: 14px; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list-meta { font-size: 12px; color: #64748b; flex-shrink: 0; }
+.list-status { padding: 2px 8px; border-radius: 6px; font-size: 11px; flex-shrink: 0; }
+.list-status.open { background: #dcfce7; color: #16a34a; }
+.list-status.closed { background: #f3f4f6; color: #9ca3af; }
+.list-action { padding: 4px 12px; border: 1px solid #3b82f6; border-radius: 6px; background: #fff; color: #3b82f6; font-size: 12px; cursor: pointer; flex-shrink: 0; }
+.list-action.danger { border-color: #ef4444; color: #ef4444; }
+.list-action:hover { background: #eff6ff; }
+
 .menu-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.menu-item { background: #fff; border-radius: 16px; padding: 26px; text-align: center; cursor: pointer; box-shadow: 0 1px 6px rgba(0,0,0,0.03); transition: all 0.25s; border: 1px solid #f1f5f9; }
+.menu-item { background: #fff; border-radius: 16px; padding: 26px; text-align: center; cursor: pointer; box-shadow: 0 1px 6px rgba(0,0,0,0.03); transition: all 0.25s; border: 1px solid #f1f5f9; position: relative; }
 .menu-item:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: #dbeafe; }
 .menu-icon { font-size: 36px; display: block; margin-bottom: 8px; }
 .menu-label { font-size: 14px; font-weight: 600; }
-.activity-card { background: #fff; border-radius: 16px; padding: 22px; box-shadow: 0 1px 6px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; }
-.activity-card h3 { font-size: 17px; font-weight: 700; margin: 0 0 16px; }
-.act-item { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid #f8fafc; }
-.act-item:last-child { border-bottom: none; }
-.act-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.act-text { flex: 1; font-size: 13px; }
-.act-time { font-size: 11px; color: #94a3b8; }
+.menu-count { display: block; font-size: 11px; color: #3b82f6; margin-top: 4px; font-weight: 600; }
+
+.edit-form { display: flex; flex-direction: column; gap: 12px; }
+.edit-form label { font-size: 13px; font-weight: 600; color: #475569; }
+.form-input { padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; width: 100%; box-sizing: border-box; }
+.form-input:focus { border-color: #3b82f6; }
 </style>

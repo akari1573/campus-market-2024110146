@@ -229,7 +229,7 @@
       "content": "你好，请问自行车还在吗？价格能优惠些吗？",
       "time": "2026-06-28 10:30",
       "productTitle": "二手自行车",
-      "unread": true
+      "unread": false
     },
     {
       "id": "2",
@@ -238,7 +238,7 @@
       "content": "机械键盘200元出吗？我就在校本部可以当面来看。",
       "time": "2026-06-28 11:15",
       "productTitle": "机械键盘",
-      "unread": true
+      "unread": false
     },
     {
       "id": "3",
@@ -256,7 +256,7 @@
       "content": "折叠桌还在吗，可以便宜点吗？我就在隔壁楼随时可以过来。",
       "time": "2026-06-27 14:20",
       "productTitle": "床上折叠桌",
-      "unread": true
+      "unread": false
     },
     {
       "id": "5",
@@ -275,6 +275,36 @@
       "time": "2026-06-26 15:30",
       "productTitle": "取快递任务",
       "unread": false
+    },
+    {
+      "from": "user_001",
+      "to": "system",
+      "content": "好的",
+      "productTitle": "取快递任务",
+      "unread": false,
+      "time": "2026/6/29 10:58:31",
+      "id": "vnZjkms"
+    },
+    {
+      "from": "user_001",
+      "to": "system",
+      "content": "jj",
+      "productTitle": "取快递任务",
+      "unread": false,
+      "time": "2026/6/29 11:21:56",
+      "id": "nlnJAhh"
+    }
+  ],
+  "users": [
+    {
+      "id": "user_001",
+      "name": "张三同学",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=220&h=220&fit=crop",
+      "phone": "138xxxx1234",
+      "campus": "校本部",
+      "dorm": "3号楼 502",
+      "college": "计算机学院 大三",
+      "signature": "热爱生活，喜欢分享"
     }
   ],
   "errands": [

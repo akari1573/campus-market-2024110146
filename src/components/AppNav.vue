@@ -1,11 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useMarketStore } from '@/stores/market'
+import { getMessages } from '@/api/message'
 
 const route = useRoute()
-const store = useMarketStore()
 const activeIndex = computed(() => route.path)
+const unreadCount = ref(0)
+
+async function fetchUnreadCount() {
+  try {
+    const res = await getMessages({ unread: 'true', to: 'user_001' })
+    unreadCount.value = res.data.length
+  } catch {
+    unreadCount.value = 0
+  }
+}
+
+onMounted(() => fetchUnreadCount())
 
 const navItems = [
   { path: '/', label: '首页' },
@@ -23,7 +34,7 @@ const navItems = [
   <el-menu :default-active="activeIndex" mode="horizontal" :ellipsis="false" router class="nav-menu">
     <el-menu-item v-for="item in navItems" :key="item.path" :index="item.path">
       {{ item.label }}
-      <span v-if="item.path === '/message' && store.unreadCount > 0" class="badge">{{ store.unreadCount }}</span>
+      <span v-if="item.path === '/message' && unreadCount > 0" class="badge">{{ unreadCount }}</span>
     </el-menu-item>
   </el-menu>
 </template>

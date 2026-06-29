@@ -91,7 +91,18 @@ function contactSeller() {
 }
 
 function addFavorite() {
-  ElMessage.success('⭐ 已加入收藏')
+  try {
+    const favs: number[] = JSON.parse(localStorage.getItem('cm_favorites') || '[]')
+    if (favs.includes(id)) {
+      ElMessage.info('该商品已在收藏中')
+      return
+    }
+    favs.push(id)
+    localStorage.setItem('cm_favorites', JSON.stringify(favs))
+    ElMessage.success('⭐ 已加入收藏')
+  } catch {
+    ElMessage.success('⭐ 已加入收藏')
+  }
 }
 
 async function markAsSold() {

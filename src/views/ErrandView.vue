@@ -21,12 +21,13 @@
             {{ getStatusText(item.status) }}
           </span>
           <button
-            v-if="item.status === 'open'"
+            v-if="item.status === 'open' && !isTaken(item.id)"
             class="take-btn"
             @click="takeTask(item)"
           >
             ✋ 我要接单
           </button>
+          <span v-else-if="isTaken(item.id)" class="taken-label">✅ 已接单</span>
         </template>
       </ItemCard>
     </div>
@@ -46,6 +47,23 @@ import EmptyState from '../components/EmptyState.vue'
 import { getErrands, updateErrand, type ErrandItem } from '../api/errand'
 
 const errands = ref<ErrandItem[]>([])
+const takenIds = ref<number[]>(loadTakenIds())
+
+function loadTakenIds(): number[] {
+  try {
+    return JSON.parse(localStorage.getItem('cm_orders_errands') || '[]')
+  } catch {
+    return []
+  }
+}
+
+function saveTakenIds() {
+  localStorage.setItem('cm_orders_errands', JSON.stringify(takenIds.value))
+}
+
+function isTaken(id: number) {
+  return takenIds.value.includes(id)
+}
 
 onMounted(async () => {
   const res = await getErrands()
@@ -67,79 +85,24 @@ function getStatusClass(status: string) {
 async function takeTask(item: ErrandItem) {
   await updateErrand(item.id, { status: 'taken' })
   item.status = 'taken'
+  takenIds.value.push(item.id)
+  saveTakenIds()
   ElMessage.success('✅ 接单成功！请及时联系发布者确认取件信息。')
 }
 </script>
 
 <style scoped>
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.page-header {
-  padding: 24px;
-  border-radius: 16px;
-  background: #fff;
-}
-
-.page-header h1 {
-  margin: 0 0 8px;
-}
-
-.page-header p {
-  margin: 0;
-  color: #6b7280;
-}
-
-.list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.reward {
-  color: #ef4444;
-  font-size: 18px;
-}
-
-.status-tag {
-  margin-left: 12px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-}
-
-.status-tag.open {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.status-tag.taken {
-  background: #dbeafe;
-  color: #2563eb;
-}
-
-.status-tag.done {
-  background: #f3f4f6;
-  color: #9ca3af;
-}
-
-.take-btn {
-  margin-left: 12px;
-  padding: 4px 14px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.take-btn:hover {
-  transform: translateY(-1px);
-}
+.page { display: flex; flex-direction: column; gap: 20px; }
+.page-header { padding: 24px; border-radius: 16px; background: #fff; }
+.page-header h1 { margin: 0 0 8px; }
+.page-header p { margin: 0; color: #6b7280; }
+.list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.reward { color: #ef4444; font-size: 18px; }
+.status-tag { margin-left: 12px; padding: 2px 10px; border-radius: 999px; font-size: 12px; }
+.status-tag.open { background: #fef3c7; color: #d97706; }
+.status-tag.taken { background: #dbeafe; color: #2563eb; }
+.status-tag.done { background: #f3f4f6; color: #9ca3af; }
+.take-btn { margin-left: 12px; padding: 4px 14px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.take-btn:hover { transform: translateY(-1px); }
+.taken-label { margin-left: 12px; font-size: 12px; color: #2563eb; font-weight: 600; }
 </style>

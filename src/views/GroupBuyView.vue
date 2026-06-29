@@ -23,12 +23,13 @@
             {{ item.status === 'open' ? '拼单中' : '已结束' }}
           </span>
           <button
-            v-if="item.status === 'open' && item.currentCount < item.targetCount"
+            v-if="item.status === 'open' && item.currentCount < item.targetCount && !isJoined(item.id)"
             class="join-btn"
             @click="joinGroup(item)"
           >
             🤝 加入拼单
           </button>
+          <span v-else-if="isJoined(item.id)" class="joined-label">✅ 已加入</span>
         </template>
       </ItemCard>
     </div>
@@ -48,6 +49,23 @@ import EmptyState from '../components/EmptyState.vue'
 import { getGroupBuys, updateGroupBuy, type GroupBuyItem } from '../api/groupBuy'
 
 const groupBuys = ref<GroupBuyItem[]>([])
+const joinedIds = ref<number[]>(loadJoinedIds())
+
+function loadJoinedIds(): number[] {
+  try {
+    return JSON.parse(localStorage.getItem('cm_orders_groupbuys') || '[]')
+  } catch {
+    return []
+  }
+}
+
+function saveJoinedIds() {
+  localStorage.setItem('cm_orders_groupbuys', JSON.stringify(joinedIds.value))
+}
+
+function isJoined(id: number) {
+  return joinedIds.value.includes(id)
+}
 
 onMounted(async () => {
   const res = await getGroupBuys()
@@ -58,75 +76,23 @@ async function joinGroup(item: GroupBuyItem) {
   const newCount = item.currentCount + 1
   await updateGroupBuy(item.id, { currentCount: newCount })
   item.currentCount = newCount
-  ElMessage.success('🎉 你已成功加入拼单！请准时到达集合地点。')
+  joinedIds.value.push(item.id)
+  saveJoinedIds()
+  ElMessage.success('🎉 你已成功加入拼单！')
 }
 </script>
 
 <style scoped>
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.page-header {
-  padding: 24px;
-  border-radius: 16px;
-  background: #fff;
-}
-
-.page-header h1 {
-  margin: 0 0 8px;
-}
-
-.page-header p {
-  margin: 0;
-  color: #6b7280;
-}
-
-.list {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.progress-text {
-  font-size: 13px;
-  color: #059669;
-  font-weight: 600;
-}
-
-.status-tag {
-  margin-left: 8px;
-  padding: 2px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-}
-
-.status-tag.open {
-  background: #dcfce7;
-  color: #16a34a;
-}
-
-.status-tag.closed {
-  background: #f3f4f6;
-  color: #9ca3af;
-}
-
-.join-btn {
-  margin-left: 12px;
-  padding: 4px 14px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.join-btn:hover {
-  transform: translateY(-1px);
-}
+.page { display: flex; flex-direction: column; gap: 20px; }
+.page-header { padding: 24px; border-radius: 16px; background: #fff; }
+.page-header h1 { margin: 0 0 8px; }
+.page-header p { margin: 0; color: #6b7280; }
+.list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.progress-text { font-size: 13px; color: #059669; font-weight: 600; }
+.status-tag { margin-left: 8px; padding: 2px 10px; border-radius: 999px; font-size: 12px; }
+.status-tag.open { background: #dcfce7; color: #16a34a; }
+.status-tag.closed { background: #f3f4f6; color: #9ca3af; }
+.join-btn { margin-left: 12px; padding: 4px 14px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+.join-btn:hover { transform: translateY(-1px); }
+.joined-label { margin-left: 12px; font-size: 12px; color: #16a34a; font-weight: 600; }
 </style>
