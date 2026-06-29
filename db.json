@@ -153,7 +153,7 @@
       "title": "周五晚火锅拼单",
       "type": "拼餐",
       "targetCount": 6,
-      "currentCount": 4,
+      "currentCount": 5,
       "deadline": "2026-06-05 17:00",
       "location": "学校南门",
       "publisher": "计算机学院学生",
@@ -293,6 +293,15 @@
       "unread": false,
       "time": "2026/6/29 11:21:56",
       "id": "nlnJAhh"
+    },
+    {
+      "from": "user_001",
+      "to": "system",
+      "content": "ll",
+      "productTitle": "取快递任务",
+      "unread": false,
+      "time": "2026/6/29 14:01:59",
+      "id": "fb7vWSU"
     }
   ],
   "users": [
