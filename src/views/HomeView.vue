@@ -51,7 +51,7 @@
         <div>
           <div class="side-card">
             <h3>🔥 热门推荐</h3>
-            <router-link v-for="(t, i) in tradesHot" :key="t.id" :to="`/detail/${t.id}`" class="hot-row">
+            <router-link v-for="(t, i) in tradesHot" :key="t.id" :to="`/detail/${t.id}?type=trade`" class="hot-row">
               <span :class="['hot-rank', `r${i + 1}`]">{{ i + 1 }}</span>
               <span class="hot-info"><div class="hot-name">{{ t.title }}</div><div class="hot-views">¥{{ t.price }}</div></span>
               <span class="hot-price">{{ t.condition }}</span>
@@ -119,7 +119,7 @@ const allFeedItems = computed(() => [
     _priceStr: `¥${t.price}`,
     _tag: t.category,
     _tagType: 'primary' as 'primary' | 'success' | 'warning' | 'danger' | 'info',
-    _link: `/detail/${t.id}`,
+    _link: `/detail/${t.id}?type=trade`,
     _cat: t.category,
   })),
   ...groupBuys.value.map((g) => ({
@@ -132,7 +132,7 @@ const allFeedItems = computed(() => [
     _priceStr: `${g.currentCount}/${g.targetCount}人`,
     _tag: '拼单',
     _tagType: 'success' as 'primary' | 'success' | 'warning' | 'danger' | 'info',
-    _link: '/group-buy',
+    _link: `/detail/${g.id}?type=groupBuy`,
     _cat: '',
   })),
   ...errands.value.map((e) => ({
@@ -145,7 +145,7 @@ const allFeedItems = computed(() => [
     _priceStr: `酬谢¥${e.reward}`,
     _tag: '跑腿',
     _tagType: 'warning' as 'primary' | 'success' | 'warning' | 'danger' | 'info',
-    _link: '/errand',
+    _link: `/detail/${e.id}?type=errand`,
     _cat: '',
   })),
   ...lostFounds.value.map((lf) => ({
@@ -158,7 +158,7 @@ const allFeedItems = computed(() => [
     _priceStr: lf.type === 'lost' ? '失物' : '招领',
     _tag: lf.type === 'lost' ? '失物' : '招领',
     _tagType: (lf.type === 'lost' ? 'danger' : 'info') as 'primary' | 'success' | 'warning' | 'danger' | 'info',
-    _link: '/lost-found',
+    _link: `/detail/${lf.id}?type=lostFound`,
     _cat: '',
   })),
 ])

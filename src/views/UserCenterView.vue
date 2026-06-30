@@ -45,7 +45,7 @@
       </div>
       <div class="menu-item" @click="showFavorites = !showFavorites">
         <span class="menu-icon">⭐</span><span class="menu-label">我的收藏</span>
-        <span class="menu-count">{{ favorites.length }}件</span>
+        <span class="menu-count">{{ favoriteItems.length }}件</span>
       </div>
       <div class="menu-item" @click="router.push('/message')">
         <span class="menu-icon">💬</span><span class="menu-label">我的消息</span>
@@ -57,28 +57,28 @@
 
     <!-- My Published List -->
     <div v-if="showMyPublished" class="section-card">
-      <h3>📋 我发布的商品 <button class="section-close" @click="showMyPublished = false">✕</button></h3>
+      <h3>📋 我的发布 <button class="section-close" @click="showMyPublished = false">✕</button></h3>
       <div v-if="myPublished.length === 0" class="section-empty">暂无发布</div>
-      <div v-for="p in myPublished" :key="p.id" class="list-row">
-        <span class="list-title">{{ p.title }}</span>
-        <span class="list-meta">¥{{ p.price }} · {{ p.condition }}</span>
-        <span :class="['list-status', p.status]">{{ p.status === 'open' ? '在售' : '已售' }}</span>
-        <button class="list-action" @click="markItemSold(p)">标记已售</button>
-        <button class="list-action danger" @click="deleteMyItem(p.id)">删除</button>
+      <div v-for="p in myPublished" :key="p._key" class="list-row" @click="goToDetail(p._type, (p as any).id ?? p.id)">
+        <span class="list-title">{{ p.title || (p as any)._title }}</span>
+        <span class="list-meta">{{ p._meta }}</span>
+        <span :class="['list-status', (p as any).status]">{{ p._status }}</span>
+        <button class="list-action" @click.stop="markItemSold(p)">标记已售</button>
+        <button class="list-action danger" @click.stop="deleteMyItem(p)">删除</button>
       </div>
     </div>
 
     <!-- Favorites -->
     <div v-if="showFavorites" class="section-card">
       <h3>⭐ 我的收藏 <button class="section-close" @click="showFavorites = false">✕</button></h3>
-      <div v-if="favorites.length === 0" class="section-empty">
+      <div v-if="favoriteItems.length === 0" class="section-empty">
         暂无收藏，去 <router-link to="/trade">二手交易</router-link> 逛逛吧
       </div>
-      <div v-for="f in favoriteItems" :key="f.id" class="list-row">
+      <div v-for="f in favoriteItems" :key="f._key" class="list-row" @click="goToDetail(f._type, f.id)">
         <span class="list-title">{{ f.title }}</span>
-        <span class="list-meta">¥{{ f.price }}</span>
-        <button class="list-action" @click="router.push(`/detail/${f.id}`)">查看</button>
-        <button class="list-action danger" @click="removeFavorite(f.id)">取消收藏</button>
+        <span class="list-meta">{{ f._meta }}</span>
+        <button class="list-action" @click.stop="goToDetail(f._type, f.id)">查看</button>
+        <button class="list-action danger" @click.stop="removeFavorite(f._type, f.id)">取消收藏</button>
       </div>
     </div>
 
@@ -111,8 +111,10 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTrades, updateTrade, deleteTrade, type TradeItem } from '../api/trade'
-import { getGroupBuys, type GroupBuyItem } from '../api/groupBuy'
-import { getErrands, type ErrandItem } from '../api/errand'
+import { getLostFounds, deleteLostFound, type LostFoundItem } from '../api/lostFound'
+import { getGroupBuys, deleteGroupBuy, type GroupBuyItem } from '../api/groupBuy'
+import { getErrands, deleteErrand, type ErrandItem } from '../api/errand'
+import { getFavorites, deleteFavorite, type FavoriteItem as ApiFavoriteItem } from '../api/favorite'
 
 const router = useRouter()
 const currentUser = '张三同学'
@@ -138,7 +140,6 @@ function saveProfile() {
   ElMessage.success('资料已更新')
 }
 
-// Load saved profile
 function loadProfile() {
   try {
     const saved = localStorage.getItem('cm_user_profile')
@@ -146,58 +147,171 @@ function loadProfile() {
   } catch { /* ignore */ }
 }
 
-// Published
+// Published - all types
 const allTrades = ref<TradeItem[]>([])
+const allLostFounds = ref<LostFoundItem[]>([])
+const allGroupBuys = ref<GroupBuyItem[]>([])
+const allErrands = ref<ErrandItem[]>([])
 const showMyPublished = ref(false)
 
-const myPublished = computed(() =>
-  allTrades.value.filter((t) => t.publisher === profile.name)
-)
-
-async function markItemSold(item: TradeItem) {
-  await updateTrade(item.id, { status: 'closed' })
-  item.status = 'closed'
-  ElMessage.success('已标记为已售')
+interface PublishedItem {
+  _key: string
+  id: number | string
+  _type: string
+  title: string
+  _meta: string
+  _status: string
+  status?: string
+  _origData: TradeItem | LostFoundItem | GroupBuyItem | ErrandItem
 }
 
-async function deleteMyItem(id: number) {
+const myPublished = computed<PublishedItem[]>(() => [
+  ...allTrades.value
+    .filter((t) => t.publisher === profile.name)
+    .map((t) => ({
+      _key: `trade-${t.id}`,
+      id: t.id,
+      _type: 'trade',
+      title: t.title,
+      _meta: `¥${t.price} · ${t.condition}`,
+      _status: t.status === 'open' ? '在售' : '已售',
+      status: t.status,
+      _origData: t,
+    })),
+  ...allLostFounds.value
+    .filter((lf) => lf.contact === '站内消息联系' || lf.status === 'open')
+    .map((lf) => ({
+      _key: 'lf-' + lf.id,
+      id: lf.id,
+      _type: 'lostFound',
+      title: lf.title,
+      _meta: lf.type === 'lost' ? '寻物' : '招领',
+      _status: lf.status === 'open' ? '寻找中' : '已找到',
+      status: lf.status,
+      _origData: lf,
+    })),
+  ...allGroupBuys.value
+    .filter((g) => g.publisher === profile.name)
+    .map((g) => ({
+      _key: 'gb-' + g.id,
+      id: g.id,
+      _type: 'groupBuy',
+      title: g.title,
+      _meta: `${g.currentCount}/${g.targetCount}人 · ${g.type}`,
+      _status: g.status === 'open' ? '招募中' : '已结束',
+      status: g.status,
+      _origData: g,
+    })),
+  ...allErrands.value
+    .filter((e) => e.publisher === profile.name)
+    .map((e) => ({
+      _key: 'er-' + e.id,
+      id: e.id,
+      _type: 'errand',
+      title: e.title,
+      _meta: `¥${e.reward} · ${e.taskType}`,
+      _status: e.status === 'open' ? '待接单' : e.status === 'taken' ? '已接单' : '已完成',
+      status: e.status,
+      _origData: e,
+    })),
+])
+
+function goToDetail(type: string, id: number | string) {
+  router.push(`/detail/${id}?type=${type}`)
+}
+
+async function markItemSold(item: PublishedItem) {
+  if (item._type === 'trade') {
+    const t = item._origData as TradeItem
+    await updateTrade(t.id, { status: 'closed' })
+    t.status = 'closed'
+    ElMessage.success('已标记为已售')
+  } else {
+    ElMessage.info('仅二手交易支持标记已售')
+  }
+}
+
+async function deleteMyItem(item: PublishedItem) {
   try {
     await ElMessageBox.confirm('确定删除？', '确认', { type: 'warning' })
-    await deleteTrade(id)
-    allTrades.value = allTrades.value.filter((t) => t.id !== id)
+    if (item._type === 'trade') {
+      await deleteTrade((item._origData as TradeItem).id)
+      allTrades.value = allTrades.value.filter((t) => t.id !== item.id)
+    } else if (item._type === 'groupBuy') {
+      await deleteGroupBuy((item._origData as GroupBuyItem).id)
+      allGroupBuys.value = allGroupBuys.value.filter((g) => g.id !== item.id)
+    } else if (item._type === 'errand') {
+      await deleteErrand((item._origData as ErrandItem).id)
+      allErrands.value = allErrands.value.filter((e) => e.id !== item.id)
+    } else if (item._type === 'lostFound') {
+      await deleteLostFound((item._origData as LostFoundItem).id)
+      allLostFounds.value = allLostFounds.value.filter((lf) => lf.id !== item.id)
+    }
     ElMessage.success('已删除')
   } catch { /* cancelled */ }
 }
 
 // Favorites
 const showFavorites = ref(false)
-const favorites = ref<number[]>(loadFavorites())
+const allFavorites = ref<ApiFavoriteItem[]>([])
 
-function loadFavorites(): number[] {
-  try { return JSON.parse(localStorage.getItem('cm_favorites') || '[]') } catch { return [] }
+async function loadFavoritesFromServer() {
+  try {
+    const res = await getFavorites({ userId: 'user_001' })
+    allFavorites.value = res.data
+  } catch { /* ignore */ }
 }
 
-function saveFavorites() {
-  localStorage.setItem('cm_favorites', JSON.stringify(favorites.value))
+async function removeFavorite(type: string, id: number | string) {
+  const fav = allFavorites.value.find((f) => f.itemType === type && f.itemId === id)
+  if (!fav || !fav.id) return
+  try {
+    await deleteFavorite(fav.id)
+    allFavorites.value = allFavorites.value.filter((f) => f.id !== fav.id)
+    ElMessage.success('已取消收藏')
+  } catch {
+    ElMessage.error('取消收藏失败')
+  }
 }
 
-function removeFavorite(id: number) {
-  favorites.value = favorites.value.filter((f) => f !== id)
-  saveFavorites()
-  ElMessage.success('已取消收藏')
+interface FavoriteDisplayItem {
+  _key: string
+  id: number | string
+  _type: string
+  title: string
+  _meta: string
 }
 
-const favoriteItems = computed(() =>
-  allTrades.value.filter((t) => favorites.value.includes(t.id))
-)
+const favoriteItems = computed<FavoriteDisplayItem[]>(() => {
+  const result: FavoriteDisplayItem[] = []
+
+  for (const fav of allFavorites.value) {
+    const type = fav.itemType
+    const itemId = fav.itemId
+
+    if (type === 'trade') {
+      const t = allTrades.value.find((x) => String(x.id) === String(itemId))
+      if (t) result.push({ _key: `fav-trade-${t.id}`, id: t.id, _type: 'trade', title: t.title, _meta: `¥${t.price}` })
+    } else if (type === 'groupBuy') {
+      const g = allGroupBuys.value.find((x) => String(x.id) === String(itemId))
+      if (g) result.push({ _key: `fav-gb-${g.id}`, id: g.id, _type: 'groupBuy', title: g.title, _meta: `${g.currentCount}/${g.targetCount}人` })
+    } else if (type === 'errand') {
+      const e = allErrands.value.find((x) => String(x.id) === String(itemId))
+      if (e) result.push({ _key: `fav-er-${e.id}`, id: e.id, _type: 'errand', title: e.title, _meta: `¥${e.reward}` })
+    } else if (type === 'lostFound') {
+      const lf = allLostFounds.value.find((x) => String(x.id) === String(itemId))
+      if (lf) result.push({ _key: `fav-lf-${lf.id}`, id: lf.id, _type: 'lostFound', title: lf.title, _meta: lf.type === 'lost' ? '寻物' : '招领' })
+    }
+  }
+
+  return result
+})
 
 // My Orders
-const allGroupBuys = ref<GroupBuyItem[]>([])
-const allErrands = ref<ErrandItem[]>([])
-const joinedBuyIds = ref<number[]>(loadIds('cm_orders_groupbuys'))
-const takenErrandIds = ref<number[]>(loadIds('cm_orders_errands'))
+const joinedBuyIds = ref<(number | string)[]>(loadIds('cm_orders_groupbuys'))
+const takenErrandIds = ref<(number | string)[]>(loadIds('cm_orders_errands'))
 
-function loadIds(key: string): number[] {
+function loadIds(key: string): (number | string)[] {
   try { return JSON.parse(localStorage.getItem(key) || '[]') } catch { return [] }
 }
 
@@ -211,41 +325,44 @@ interface OrderItem {
   _link: string
 }
 
-const orderItems = computed<OrderItem[]>(() => [
-  ...allGroupBuys.value
-    .filter((g) => joinedBuyIds.value.includes(g.id))
-    .map((g) => ({
-      _key: `gb-${g.id}`,
-      title: g.title,
-      _title: g.title,
-      _price: `${g.currentCount}/${g.targetCount}人`,
-      _status: g.status === 'open' ? '进行中' : '已结束',
-      _typeLabel: '拼单',
-      _link: '/group-buy',
-    })),
-  ...allErrands.value
-    .filter((e) => takenErrandIds.value.includes(e.id))
-    .map((e) => ({
-      _key: `er-${e.id}`,
-      title: e.title,
-      _title: e.title,
-      _price: `¥${e.reward}`,
-      _status: e.status === 'open' ? '待完成' : e.status === 'taken' ? '进行中' : '已完成',
-      _typeLabel: '跑腿',
-      _link: '/errand',
-    })),
-  ...allTrades.value
-    .filter((t) => t.status === 'closed' && t.publisher === profile.name)
-    .map((t) => ({
-      _key: `td-${t.id}`,
-      title: t.title,
-      _title: t.title,
-      _price: `¥${t.price}`,
-      _status: '已售出',
-      _typeLabel: '交易',
-      _link: `/detail/${t.id}`,
-    })),
-])
+const orderItems = computed<OrderItem[]>(() => {
+  const directDeleteImports = [
+    ...allGroupBuys.value
+      .filter((g) => joinedBuyIds.value.includes(g.id))
+      .map((g) => ({
+        _key: `gb-${g.id}`,
+        title: g.title,
+        _title: g.title,
+        _price: `${g.currentCount}/${g.targetCount}人`,
+        _status: g.status === 'open' ? '进行中' : '已结束',
+        _typeLabel: '拼单',
+        _link: `/detail/${g.id}?type=groupBuy`,
+      })),
+    ...allErrands.value
+      .filter((e) => takenErrandIds.value.includes(e.id))
+      .map((e) => ({
+        _key: `er-${e.id}`,
+        title: e.title,
+        _title: e.title,
+        _price: `¥${e.reward}`,
+        _status: e.status === 'open' ? '待完成' : e.status === 'taken' ? '进行中' : '已完成',
+        _typeLabel: '跑腿',
+        _link: `/detail/${e.id}?type=errand`,
+      })),
+    ...allTrades.value
+      .filter((t) => t.status === 'closed' && t.publisher === profile.name)
+      .map((t) => ({
+        _key: `td-${t.id}`,
+        title: t.title,
+        _title: t.title,
+        _price: `¥${t.price}`,
+        _status: '已售出',
+        _typeLabel: '交易',
+        _link: `/detail/${t.id}?type=trade`,
+      })),
+  ]
+  return directDeleteImports
+})
 
 function goToOrder(o: OrderItem) {
   router.push(o._link)
@@ -254,21 +371,24 @@ function goToOrder(o: OrderItem) {
 // Stats
 const stats = computed(() => [
   { label: '我的发布', value: myPublished.value.length, color: '#3b82f6' },
-  { label: '我的收藏', value: favorites.value.length, color: '#10b981' },
+  { label: '我的收藏', value: favoriteItems.value.length, color: '#10b981' },
   { label: '我的订单', value: orderItems.value.length, color: '#f59e0b' },
   { label: '已成交', value: allTrades.value.filter((t) => t.publisher === profile.name && t.status === 'closed').length, color: '#ef4444' },
 ])
 
 onMounted(async () => {
   loadProfile()
-  const [t, gb, e] = await Promise.all([
+  const [t, lf, gb, e] = await Promise.all([
     getTrades(),
+    getLostFounds(),
     getGroupBuys(),
     getErrands(),
   ])
   allTrades.value = t.data
+  allLostFounds.value = lf.data
   allGroupBuys.value = gb.data
   allErrands.value = e.data
+  await loadFavoritesFromServer()
 })
 </script>
 

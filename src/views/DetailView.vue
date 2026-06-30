@@ -2,41 +2,42 @@
   <div class="page">
     <div class="breadcrumb">
       <router-link to="/">首页</router-link><span class="sep">/</span>
-      <router-link to="/trade">二手交易</router-link><span class="sep">/</span>
-      <span class="current">{{ detail?.title || '商品详情' }}</span>
+      <router-link :to="listLink">{{ listLabel }}</router-link><span class="sep">/</span>
+      <span class="current">{{ detail?.title || '详情' }}</span>
     </div>
 
     <div v-if="loading" class="loading-state">加载中...</div>
 
     <div v-else-if="!detail" class="not-found">
-      <el-empty description="商品未找到"><el-button type="primary" @click="router.push('/list')">返回列表</el-button></el-empty>
+      <el-empty description="信息未找到"><el-button type="primary" @click="router.push('/')">返回首页</el-button></el-empty>
     </div>
 
-    <template v-else>
+    <!-- Trade Detail -->
+    <template v-else-if="itemType === 'trade'">
       <div class="detail-grid">
         <div>
           <div class="main-card">
-            <div class="img-main"><img :src="detail.image" :alt="detail.title" /></div>
+            <div class="img-main"><img :src="(detail as TradeItem).image" :alt="(detail as TradeItem).title" /></div>
             <div class="main-body">
-              <h1 class="dt-title">{{ detail.title }}</h1>
-              <div class="dt-price">¥{{ detail.price }} <span class="orig">原价 ¥{{ Math.round(detail.price * 1.4) }}</span></div>
+              <h1 class="dt-title">{{ (detail as TradeItem).title }}</h1>
+              <div class="dt-price">¥{{ (detail as TradeItem).price }} <span class="orig">原价 ¥{{ Math.round((detail as TradeItem).price * 1.4) }}</span></div>
               <div class="dt-tags">
-                <el-tag type="primary">{{ detail.category }}</el-tag>
-                <el-tag :type="detail.status === 'open' ? 'success' : 'info'">{{ detail.status === 'open' ? '在售' : '已售出' }}</el-tag>
-                <span class="views">🕐 {{ detail.publishTime }}</span>
+                <el-tag type="primary">{{ (detail as TradeItem).category }}</el-tag>
+                <el-tag :type="(detail as TradeItem).status === 'open' ? 'success' : 'info'">{{ (detail as TradeItem).status === 'open' ? '在售' : '已售出' }}</el-tag>
+                <span class="views">🕐 {{ (detail as TradeItem).publishTime }}</span>
               </div>
               <div class="dt-meta">
-                <div class="meta-item"><span class="lbl">📍 交易地点：</span><span class="val">{{ detail.location }}</span></div>
-                <div class="meta-item"><span class="lbl">👤 发布人：</span><span class="val">{{ detail.publisher }}</span></div>
-                <div class="meta-item"><span class="lbl">📦 成色：</span><span class="val">{{ detail.condition }}</span></div>
-                <div class="meta-item"><span class="lbl">🆔 编号：</span><span class="val">SH00{{ detail.id }}</span></div>
+                <div class="meta-item"><span class="lbl">📍 交易地点：</span><span class="val">{{ (detail as TradeItem).location }}</span></div>
+                <div class="meta-item"><span class="lbl">👤 发布人：</span><span class="val">{{ (detail as TradeItem).publisher }}</span></div>
+                <div class="meta-item"><span class="lbl">📦 成色：</span><span class="val">{{ (detail as TradeItem).condition }}</span></div>
+                <div class="meta-item"><span class="lbl">🆔 编号：</span><span class="val">SH00{{ (detail as TradeItem).id }}</span></div>
               </div>
-              <div class="dt-body"><h3>📝 商品描述</h3><p>{{ detail.description }}</p></div>
+              <div class="dt-body"><h3>📝 商品描述</h3><p>{{ (detail as TradeItem).description }}</p></div>
               <div class="dt-actions">
-                <el-button type="primary" size="large" @click="contactSeller">💬 联系卖家</el-button>
-                <el-button size="large" @click="addFavorite">⭐ 收藏</el-button>
+                <el-button type="primary" size="large" @click="contactItem">💬 联系发布者</el-button>
+                <el-button size="large" @click="toggleFavorite">{{ isFavorited ? '⭐ 已收藏' : '⭐ 收藏' }}</el-button>
                 <div style="flex:1;" />
-                <el-button v-if="detail.status === 'open'" size="large" type="success" @click="markAsSold">✅ 标记已售</el-button>
+                <el-button v-if="(detail as TradeItem).status === 'open'" size="large" type="success" @click="markAsSold">✅ 标记已售</el-button>
                 <el-button size="large" type="danger" plain @click="removeItem">🗑️ 删除</el-button>
               </div>
             </div>
@@ -47,9 +48,9 @@
             <h3>👤 卖家信息</h3>
             <div class="seller-row">
               <div class="seller-avt"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=220&h=220&fit=crop" alt="" /></div>
-              <div><div class="seller-name">{{ detail.publisher }}</div><div class="seller-badge">✅ 已实名 · 信用良好</div></div>
+              <div><div class="seller-name">{{ (detail as TradeItem).publisher }}</div><div class="seller-badge">✅ 已实名 · 信用良好</div></div>
             </div>
-            <el-button type="primary" style="width:100%;margin-bottom:8px;" @click="contactSeller">💬 联系卖家</el-button>
+            <el-button type="primary" style="width:100%;margin-bottom:8px;" @click="contactItem">💬 联系发布者</el-button>
           </div>
           <div class="safety-box">
             <strong>⚠️ 交易安全提醒</strong><br>
@@ -58,67 +59,271 @@
         </div>
       </div>
     </template>
+
+    <!-- LostFound Detail -->
+    <template v-else-if="itemType === 'lostFound'">
+      <div class="detail-grid">
+        <div>
+          <div class="main-card">
+            <div class="img-main img-placeholder">{{ (detail as LostFoundItem).type === 'lost' ? '🔍' : '📦' }}</div>
+            <div class="main-body">
+              <h1 class="dt-title">{{ (detail as LostFoundItem).title }}</h1>
+              <div class="dt-price">{{ (detail as LostFoundItem).type === 'lost' ? '寻物启事' : '招领启事' }}</div>
+              <div class="dt-tags">
+                <el-tag :type="(detail as LostFoundItem).type === 'lost' ? 'danger' : 'success'">{{ (detail as LostFoundItem).type === 'lost' ? '寻物' : '招领' }}</el-tag>
+                <el-tag :type="(detail as LostFoundItem).status === 'open' ? 'warning' : 'info'">{{ (detail as LostFoundItem).status === 'open' ? '寻找中' : '已找到' }}</el-tag>
+                <span class="views">🕐 {{ (detail as LostFoundItem).eventTime }}</span>
+              </div>
+              <div class="dt-meta">
+                <div class="meta-item"><span class="lbl">📦 物品名称：</span><span class="val">{{ (detail as LostFoundItem).itemName }}</span></div>
+                <div class="meta-item"><span class="lbl">📍 地点：</span><span class="val">{{ (detail as LostFoundItem).location }}</span></div>
+                <div class="meta-item"><span class="lbl">📞 联系方式：</span><span class="val">{{ (detail as LostFoundItem).contact }}</span></div>
+              </div>
+              <div class="dt-body"><h3>📝 详细描述</h3><p>{{ (detail as LostFoundItem).description }}</p></div>
+              <div class="dt-actions">
+                <el-button type="primary" size="large" @click="contactItem">💬 联系发布者</el-button>
+                <el-button size="large" @click="toggleFavorite">{{ isFavorited ? '⭐ 已收藏' : '⭐ 收藏' }}</el-button>
+                <div style="flex:1;" />
+                <el-button size="large" type="danger" plain @click="removeItem">🗑️ 删除</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="side-card">
+            <h3>📋 信息说明</h3>
+            <p style="color:#64748b;font-size:13px;line-height:1.8;">此信息发布于校园轻集市失物招领板块。如有线索请通过站内消息联系发布者。</p>
+          </div>
+          <div class="safety-box">
+            <strong>💡 温馨提示</strong><br>
+            · 认领物品时请核实对方身份<br>· 贵重物品建议在公共场所交接<br>· 谨防冒领和诈骗
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- GroupBuy Detail -->
+    <template v-else-if="itemType === 'groupBuy'">
+      <div class="detail-grid">
+        <div>
+          <div class="main-card">
+            <div class="img-main img-placeholder">🤝</div>
+            <div class="main-body">
+              <h1 class="dt-title">{{ (detail as GroupBuyItem).title }}</h1>
+              <div class="dt-price">{{ (detail as GroupBuyItem).currentCount }}/{{ (detail as GroupBuyItem).targetCount }}人 <span class="orig">目标{{ (detail as GroupBuyItem).targetCount }}人</span></div>
+              <div class="dt-tags">
+                <el-tag type="primary">{{ (detail as GroupBuyItem).type }}</el-tag>
+                <el-tag :type="(detail as GroupBuyItem).status === 'open' ? 'success' : 'info'">{{ (detail as GroupBuyItem).status === 'open' ? '招募中' : '已结束' }}</el-tag>
+                <span class="views">⏰ 截止：{{ (detail as GroupBuyItem).deadline }}</span>
+              </div>
+              <div class="dt-meta">
+                <div class="meta-item"><span class="lbl">📍 地点：</span><span class="val">{{ (detail as GroupBuyItem).location }}</span></div>
+                <div class="meta-item"><span class="lbl">👤 发起人：</span><span class="val">{{ (detail as GroupBuyItem).publisher }}</span></div>
+                <div class="meta-item"><span class="lbl">👥 当前人数：</span><span class="val">{{ (detail as GroupBuyItem).currentCount }} 人已加入</span></div>
+              </div>
+              <div class="dt-body"><h3>📝 拼单说明</h3><p>{{ (detail as GroupBuyItem).description }}</p></div>
+              <div class="dt-actions">
+                <el-button type="primary" size="large" @click="contactItem">💬 联系发起人</el-button>
+                <el-button size="large" @click="toggleFavorite">{{ isFavorited ? '⭐ 已收藏' : '⭐ 收藏' }}</el-button>
+                <div style="flex:1;" />
+                <el-button size="large" type="danger" plain @click="removeItem">🗑️ 删除</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="side-card">
+            <h3>👤 发起人信息</h3>
+            <div class="seller-row">
+              <div class="seller-avt"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=220&h=220&fit=crop" alt="" /></div>
+              <div><div class="seller-name">{{ (detail as GroupBuyItem).publisher }}</div><div class="seller-badge">✅ 已实名</div></div>
+            </div>
+          </div>
+          <div class="safety-box">
+            <strong>💡 拼单提醒</strong><br>
+            · 请在截止时间前加入拼单<br>· 拼单成功后请注意查收消息<br>· 如有疑问请联系发起人
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- Errand Detail -->
+    <template v-else-if="itemType === 'errand'">
+      <div class="detail-grid">
+        <div>
+          <div class="main-card">
+            <div class="img-main img-placeholder">🏃</div>
+            <div class="main-body">
+              <h1 class="dt-title">{{ (detail as ErrandItem).title }}</h1>
+              <div class="dt-price">酬劳 ¥{{ (detail as ErrandItem).reward }}</div>
+              <div class="dt-tags">
+                <el-tag type="warning">{{ (detail as ErrandItem).taskType }}</el-tag>
+                <el-tag :type="(detail as ErrandItem).status === 'open' ? 'success' : (detail as ErrandItem).status === 'taken' ? 'warning' : 'info'">{{ (detail as ErrandItem).status === 'open' ? '待接单' : (detail as ErrandItem).status === 'taken' ? '已接单' : '已完成' }}</el-tag>
+                <span class="views">⏰ 截止：{{ (detail as ErrandItem).deadline }}</span>
+              </div>
+              <div class="dt-meta">
+                <div class="meta-item"><span class="lbl">📍 取件地点：</span><span class="val">{{ (detail as ErrandItem).from }}</span></div>
+                <div class="meta-item"><span class="lbl">🏁 送达地点：</span><span class="val">{{ (detail as ErrandItem).to }}</span></div>
+                <div class="meta-item"><span class="lbl">👤 委托人：</span><span class="val">{{ (detail as ErrandItem).publisher }}</span></div>
+              </div>
+              <div class="dt-body"><h3>📝 任务说明</h3><p>{{ (detail as ErrandItem).description }}</p></div>
+              <div class="dt-actions">
+                <el-button type="primary" size="large" @click="contactItem">💬 联系委托人</el-button>
+                <el-button size="large" @click="toggleFavorite">{{ isFavorited ? '⭐ 已收藏' : '⭐ 收藏' }}</el-button>
+                <div style="flex:1;" />
+                <el-button size="large" type="danger" plain @click="removeItem">🗑️ 删除</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="side-card">
+            <h3>👤 委托人信息</h3>
+            <div class="seller-row">
+              <div class="seller-avt"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=220&h=220&fit=crop" alt="" /></div>
+              <div><div class="seller-name">{{ (detail as ErrandItem).publisher }}</div><div class="seller-badge">✅ 已实名</div></div>
+            </div>
+          </div>
+          <div class="safety-box">
+            <strong>💡 跑腿提醒</strong><br>
+            · 接单前请确认任务内容和酬劳<br>· 请在截止时间前完成任务<br>· 如遇问题请及时联系委托人
+          </div>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTradeById, updateTrade, deleteTrade, type TradeItem } from '../api/trade'
+import { getLostFoundById, updateLostFound, deleteLostFound, type LostFoundItem } from '../api/lostFound'
+import { getGroupBuyById, updateGroupBuy, deleteGroupBuy, type GroupBuyItem } from '../api/groupBuy'
+import { getErrandById, updateErrand, deleteErrand, type ErrandItem } from '../api/errand'
+import { getFavorites, createFavorite, deleteFavorite, type FavoriteItem } from '../api/favorite'
+
+type ItemType = 'trade' | 'lostFound' | 'groupBuy' | 'errand'
 
 const route = useRoute()
 const router = useRouter()
-const id = Number(route.params.id)
-const detail = ref<TradeItem | null>(null)
+const id = route.params.id as string
+const itemType = (route.query.type as ItemType) || 'trade'
+const detail = ref<TradeItem | LostFoundItem | GroupBuyItem | ErrandItem | null>(null)
 const loading = ref(true)
+const userId = 'user_001'
+
+const isFavorited = ref(false)
+const favoriteRecordId = ref<string | null>(null)
+
+const listLink = computed(() => {
+  const map: Record<ItemType, string> = {
+    trade: '/trade',
+    lostFound: '/lost-found',
+    groupBuy: '/group-buy',
+    errand: '/errand',
+  }
+  return map[itemType] || '/trade'
+})
+
+const listLabel = computed(() => {
+  const map: Record<ItemType, string> = {
+    trade: '二手交易',
+    lostFound: '失物招领',
+    groupBuy: '拼单搭子',
+    errand: '跑腿委托',
+  }
+  return map[itemType] || '二手交易'
+})
 
 onMounted(async () => {
   try {
-    const res = await getTradeById(id)
-    detail.value = res.data
+    if (itemType === 'trade') {
+      const res = await getTradeById(id)
+      detail.value = res.data
+    } else if (itemType === 'lostFound') {
+      const res = await getLostFoundById(id)
+      detail.value = res.data
+    } else if (itemType === 'groupBuy') {
+      const res = await getGroupBuyById(id)
+      detail.value = res.data
+    } else if (itemType === 'errand') {
+      const res = await getErrandById(id)
+      detail.value = res.data
+    }
   } catch {
     detail.value = null
   } finally {
     loading.value = false
   }
+
+  try {
+    const res = await getFavorites({ itemType, itemId: id, userId })
+    const first = res.data[0]
+    if (first && first.id) {
+      isFavorited.value = true
+      favoriteRecordId.value = first.id
+    }
+  } catch { /* ignore */ }
 })
 
-function contactSeller() {
+function contactItem() {
   if (detail.value) {
-    ElMessage.success(`已向卖家 ${detail.value.publisher} 发送消息`)
+    const item = detail.value as { title?: string; publisher?: string }
+    ElMessage.success(`已向发布者 ${item.publisher || '用户'} 发送消息`)
   }
 }
 
-function addFavorite() {
-  try {
-    const favs: number[] = JSON.parse(localStorage.getItem('cm_favorites') || '[]')
-    if (favs.includes(id)) {
-      ElMessage.info('该商品已在收藏中')
-      return
+async function toggleFavorite() {
+  if (isFavorited.value && favoriteRecordId.value) {
+    try {
+      await deleteFavorite(favoriteRecordId.value)
+      isFavorited.value = false
+      favoriteRecordId.value = null
+      ElMessage.success('已取消收藏')
+    } catch {
+      ElMessage.error('取消收藏失败')
     }
-    favs.push(id)
-    localStorage.setItem('cm_favorites', JSON.stringify(favs))
-    ElMessage.success('⭐ 已加入收藏')
-  } catch {
-    ElMessage.success('⭐ 已加入收藏')
+  } else {
+    try {
+      const res = await createFavorite({
+        itemType,
+        itemId: id,
+        userId,
+      })
+      isFavorited.value = true
+      favoriteRecordId.value = res.data.id as string
+      ElMessage.success('⭐ 已加入收藏')
+    } catch {
+      ElMessage.error('收藏失败，请检查 Mock 服务')
+    }
   }
 }
 
 async function markAsSold() {
-  if (!detail.value) return
-  await updateTrade(detail.value.id, { status: 'closed' })
-  detail.value.status = 'closed'
-  ElMessage.success('该商品已标记为已售出')
+  if (!detail.value || itemType !== 'trade') return
+  const t = detail.value as TradeItem
+  await updateTrade(t.id, { status: 'closed' })
+  detail.value = { ...t, status: 'closed' }
+  ElMessage.success('已标记为已售出')
 }
 
 async function removeItem() {
   if (!detail.value) return
   try {
-    await ElMessageBox.confirm('确定要删除该商品吗？此操作不可撤销。', '确认删除', { type: 'warning' })
-    await deleteTrade(detail.value.id)
-    ElMessage.success('商品已删除')
-    router.push('/list')
+    await ElMessageBox.confirm('确定要删除该信息吗？此操作不可撤销。', '确认删除', { type: 'warning' })
+    if (itemType === 'trade') {
+      await deleteTrade((detail.value as TradeItem).id)
+    } else if (itemType === 'lostFound') {
+      await deleteLostFound((detail.value as LostFoundItem).id)
+    } else if (itemType === 'groupBuy') {
+      await deleteGroupBuy((detail.value as GroupBuyItem).id)
+    } else if (itemType === 'errand') {
+      await deleteErrand((detail.value as ErrandItem).id)
+    }
+    ElMessage.success('信息已删除')
+    router.push(listLink.value)
   } catch {
     // 用户取消
   }
@@ -137,6 +342,7 @@ async function removeItem() {
 .main-card { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 1px 8px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; }
 .img-main { height: 460px; background: #f8fafc; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .img-main img { width: 100%; height: 100%; object-fit: contain; }
+.img-placeholder { font-size: 100px; color: #d1d5db; }
 .main-body { padding: 0 24px 24px; }
 .dt-title { font-size: 24px; font-weight: 700; color: #1e293b; margin: 16px 0 6px; }
 .dt-price { font-size: 34px; font-weight: 800; color: #ef4444; margin-bottom: 16px; display: flex; align-items: baseline; gap: 10px; }

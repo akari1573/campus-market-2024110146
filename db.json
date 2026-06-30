@@ -77,76 +77,22 @@
       "image": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&h=600&fit=crop",
       "status": "open",
       "description": "四级真题试卷近五年，含听力音频二维码，部分有笔记。"
+    },
+    {
+      "title": "冯家林",
+      "category": "生活用品",
+      "price": 78,
+      "condition": "正常使用痕迹",
+      "location": "447",
+      "publisher": "张三同学",
+      "publishTime": "2026-06-30 09:01",
+      "image": "",
+      "status": "open",
+      "description": "杯子",
+      "id": "t6JYjPC"
     }
   ],
-  "lostFounds": [
-    {
-      "id": "1",
-      "title": "寻找黑色校园卡",
-      "type": "lost",
-      "itemName": "校园卡",
-      "location": "一食堂附近",
-      "eventTime": "2026-06-02 12:10",
-      "contact": "站内消息联系",
-      "status": "open",
-      "description": "校园卡卡套为黑色，内有学生证。"
-    },
-    {
-      "id": "2",
-      "title": "拾到蓝色雨伞",
-      "type": "found",
-      "itemName": "雨伞",
-      "location": "教学楼 A 区",
-      "eventTime": "2026-06-02 18:40",
-      "contact": "站内消息联系",
-      "status": "open",
-      "description": "雨伞放在 A 区一楼值班室。"
-    },
-    {
-      "id": "3",
-      "title": "丢失银色 U 盘 32G",
-      "type": "lost",
-      "itemName": "U 盘",
-      "location": "计算机实验楼 306",
-      "eventTime": "2026-06-03 15:30",
-      "contact": "加微信 138xxxx5678",
-      "status": "open",
-      "description": "银色金属外壳 U 盘，32G 容量，内有课程设计资料。"
-    },
-    {
-      "id": "4",
-      "title": "拾到一副黑色蓝牙耳机",
-      "type": "found",
-      "itemName": "蓝牙耳机",
-      "location": "操场跑道旁",
-      "eventTime": "2026-06-04 07:20",
-      "contact": "站内消息联系",
-      "status": "open",
-      "description": "黑色入耳式蓝牙耳机，品牌为漫步者，已交到体育馆值班室。"
-    },
-    {
-      "id": "5",
-      "title": "丢失学生证（李同学）",
-      "type": "lost",
-      "itemName": "学生证",
-      "location": "南门到宿舍路上",
-      "eventTime": "2026-06-05 20:00",
-      "contact": "手机 139xxxx4321",
-      "status": "open",
-      "description": "学生证姓名李某某，计算机学院 2023 级，丢失在外套口袋里。"
-    },
-    {
-      "id": "6",
-      "title": "拾到一本笔记本",
-      "type": "found",
-      "itemName": "笔记本",
-      "location": "二食堂二楼",
-      "eventTime": "2026-06-06 12:50",
-      "contact": "站内消息联系",
-      "status": "closed",
-      "description": "黑色封面笔记本，内有高等数学笔记，已放在食堂失物招领处。"
-    }
-  ],
+  "lostFounds": [],
   "groupBuys": [
     {
       "id": "1",
@@ -165,7 +111,7 @@
       "title": "四六级资料团购",
       "type": "学习资料",
       "targetCount": 10,
-      "currentCount": 7,
+      "currentCount": 8,
       "deadline": "2026-06-06 22:00",
       "location": "线上确认",
       "publisher": "外国语学院学生",
@@ -338,7 +284,7 @@
       "to": "实验楼 302",
       "deadline": "2026-06-03 18:30",
       "publisher": "实验室学生",
-      "status": "open",
+      "status": "taken",
       "description": "需要在 18:30 前送到。"
     },
     {
@@ -390,5 +336,6 @@
       "description": "感冒药和退烧药各一盒，送到宿舍敲门即可。"
     }
   ],
+  "favorites": [],
   "$schema": "./node_modules/json-server/schema.json"
 }

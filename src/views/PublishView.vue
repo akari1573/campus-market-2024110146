@@ -16,6 +16,20 @@
           </select>
         </FormField>
 
+        <FormField v-if="publishType === 'trade'" label="商品图片">
+          <div class="image-upload">
+            <div v-if="imagePreview" class="image-preview-box">
+              <img :src="imagePreview" class="preview-img" alt="预览" />
+              <button type="button" class="remove-img" @click="removeImage">✕</button>
+            </div>
+            <label v-else class="upload-trigger">
+              <input type="file" accept="image/*" class="upload-input" @change="handleImageUpload" />
+              <span class="upload-icon">📷</span>
+              <span class="upload-text">{{ uploading ? '上传中...' : '点击上传商品图片' }}</span>
+            </label>
+          </div>
+        </FormField>
+
         <FormField label="标题" required :error="errors.title">
           <input v-model.trim="form.title" type="text" class="form-input" placeholder="请输入标题" />
         </FormField>
@@ -130,6 +144,8 @@ type PublishType = 'trade' | 'lostFound' | 'groupBuy' | 'errand'
 const router = useRouter()
 const publishType = ref<PublishType>('trade')
 const submitting = ref(false)
+const imagePreview = ref('')
+const uploading = ref(false)
 
 const tradeCategories = ['数码/电器', '书籍/资料', '生活用品', '文体/娱乐', '服饰/鞋包', '其他']
 
@@ -137,6 +153,7 @@ const form = reactive({
   title: '',
   location: '',
   description: '',
+  image: '',
   category: '',
   tradePrice: 0,
   condition: '',
@@ -153,6 +170,31 @@ const form = reactive({
 })
 
 const errors = reactive<Record<string, string>>({})
+
+function handleImageUpload(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  if (file.size > 5 * 1024 * 1024) {
+    ElMessage.warning('图片大小不能超过5MB')
+    return
+  }
+
+  uploading.value = true
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    const base64 = ev.target?.result as string
+    form.image = base64
+    imagePreview.value = base64
+    uploading.value = false
+  }
+  reader.readAsDataURL(file)
+}
+
+function removeImage() {
+  form.image = ''
+  imagePreview.value = ''
+}
 
 function clearErrors() {
   Object.keys(errors).forEach((key) => {
@@ -247,9 +289,9 @@ async function handleSubmit() {
         price: form.tradePrice,
         condition: form.condition,
         location: form.location,
-        publisher: '当前用户',
+        publisher: '张三同学',
         publishTime: getCurrentTime(),
-        image: '',
+        image: form.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=400&fit=crop',
         status: 'open',
         description: form.description,
       })
@@ -280,7 +322,7 @@ async function handleSubmit() {
         currentCount: 1,
         deadline: form.deadline,
         location: form.location,
-        publisher: '当前用户',
+        publisher: '张三同学',
         status: 'open',
         description: form.description,
       })
@@ -296,7 +338,7 @@ async function handleSubmit() {
         from: form.from,
         to: form.to,
         deadline: form.deadline,
-        publisher: '当前用户',
+        publisher: '张三同学',
         status: 'open',
         description: form.description,
       })
@@ -315,6 +357,7 @@ function resetForm() {
   form.title = ''
   form.location = ''
   form.description = ''
+  form.image = ''
   form.category = ''
   form.tradePrice = 0
   form.condition = ''
@@ -328,6 +371,8 @@ function resetForm() {
   form.reward = 0
   form.from = ''
   form.to = ''
+  imagePreview.value = ''
+  uploading.value = false
   clearErrors()
 }
 </script>
@@ -396,6 +441,80 @@ function resetForm() {
 .form-textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+.image-upload {
+  display: flex;
+  align-items: center;
+}
+
+.image-preview-box {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+}
+
+.preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-img {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.remove-img:hover {
+  background: #ef4444;
+}
+
+.upload-trigger {
+  width: 200px;
+  height: 200px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.upload-trigger:hover {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.upload-input {
+  display: none;
+}
+
+.upload-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.upload-text {
+  font-size: 13px;
+  color: #64748b;
 }
 
 .form-actions {

@@ -1,7 +1,7 @@
 import http from './http'
 
 export interface LostFoundItem {
-  id: number
+  id: number | string
   title: string
   type: 'lost' | 'found'
   itemName: string
@@ -16,7 +16,7 @@ export function getLostFounds(params?: Record<string, string | number>) {
   return http.get<LostFoundItem[]>('/lostFounds', { params })
 }
 
-export function getLostFoundById(id: number) {
+export function getLostFoundById(id: number | string) {
   return http.get<LostFoundItem>(`/lostFounds/${id}`)
 }
 
@@ -24,10 +24,10 @@ export function createLostFound(data: Omit<LostFoundItem, 'id'>) {
   return http.post<LostFoundItem>('/lostFounds', data)
 }
 
-export function updateLostFound(id: number, data: Partial<LostFoundItem>) {
+export function updateLostFound(id: number | string, data: Partial<LostFoundItem>) {
   return http.patch<LostFoundItem>(`/lostFounds/${id}`, data)
 }
 
-export function deleteLostFound(id: number) {
+export function deleteLostFound(id: number | string) {
   return http.delete(`/lostFounds/${id}`)
 }

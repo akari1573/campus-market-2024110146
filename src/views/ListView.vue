@@ -80,8 +80,8 @@ const paged = computed(() => {
   return filtered.value.slice(start, start + pageSize)
 })
 
-function goDetail(id: number) {
-  router.push(`/detail/${id}`)
+function goDetail(id: number | string) {
+  router.push(`/detail/${id}?type=trade`)
 }
 
 onMounted(async () => {

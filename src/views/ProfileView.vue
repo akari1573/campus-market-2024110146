@@ -66,8 +66,8 @@ function saveProfile() {
   ElMessage.success('个人资料已更新')
 }
 
-function goDetail(id: number) {
-  router.push(`/detail/${id}`)
+function goDetail(id: number | string) {
+  router.push(`/detail/${id}?type=trade`)
 }
 </script>
 

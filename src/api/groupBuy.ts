@@ -1,7 +1,7 @@
 import http from './http'
 
 export interface GroupBuyItem {
-  id: number
+  id: number | string
   title: string
   type: string
   targetCount: number
@@ -17,7 +17,7 @@ export function getGroupBuys(params?: Record<string, string | number>) {
   return http.get<GroupBuyItem[]>('/groupBuys', { params })
 }
 
-export function getGroupBuyById(id: number) {
+export function getGroupBuyById(id: number | string) {
   return http.get<GroupBuyItem>(`/groupBuys/${id}`)
 }
 
@@ -25,10 +25,10 @@ export function createGroupBuy(data: Omit<GroupBuyItem, 'id'>) {
   return http.post<GroupBuyItem>('/groupBuys', data)
 }
 
-export function updateGroupBuy(id: number, data: Partial<GroupBuyItem>) {
+export function updateGroupBuy(id: number | string, data: Partial<GroupBuyItem>) {
   return http.patch<GroupBuyItem>(`/groupBuys/${id}`, data)
 }
 
-export function deleteGroupBuy(id: number) {
+export function deleteGroupBuy(id: number | string) {
   return http.delete(`/groupBuys/${id}`)
 }

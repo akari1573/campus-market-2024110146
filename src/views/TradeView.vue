@@ -6,20 +6,25 @@
     </div>
 
     <div class="list">
-      <ItemCard
+      <div
         v-for="item in trades"
         :key="item.id"
-        :title="item.title"
-        :description="item.description"
-        :tag="item.category"
-        :location="item.location"
-        :time="item.publishTime"
+        class="list-item"
+        @click="router.push(`/detail/${item.id}?type=trade`)"
       >
-        <template #footer>
-          <strong>￥{{ item.price }}</strong>
-          <span class="condition">{{ item.condition }}</span>
-        </template>
-      </ItemCard>
+        <ItemCard
+          :title="item.title"
+          :description="item.description"
+          :tag="item.category"
+          :location="item.location"
+          :time="item.publishTime"
+        >
+          <template #footer>
+            <strong>￥{{ item.price }}</strong>
+            <span class="condition">{{ item.condition }}</span>
+          </template>
+        </ItemCard>
+      </div>
     </div>
 
     <EmptyState
@@ -31,10 +36,12 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getTrades, type TradeItem } from '../api/trade'
 
+const router = useRouter()
 const trades = ref<TradeItem[]>([])
 
 onMounted(async () => {
@@ -69,6 +76,16 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+.list-item {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.list-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .condition {

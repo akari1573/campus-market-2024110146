@@ -6,32 +6,37 @@
     </div>
 
     <div class="list">
-      <ItemCard
+      <div
         v-for="item in groupBuys"
         :key="item.id"
-        :title="item.title"
-        :description="item.description"
-        :tag="item.type"
-        :location="item.location"
-        :time="`截止 ${item.deadline}`"
+        class="list-item"
+        @click="router.push(`/detail/${item.id}?type=groupBuy`)"
       >
-        <template #footer>
-          <span class="progress-text">
-            已拼 {{ item.currentCount }}/{{ item.targetCount }} 人
-          </span>
-          <span :class="['status-tag', item.status === 'open' ? 'open' : 'closed']">
-            {{ item.status === 'open' ? '拼单中' : '已结束' }}
-          </span>
-          <button
-            v-if="item.status === 'open' && item.currentCount < item.targetCount && !isJoined(item.id)"
-            class="join-btn"
-            @click="joinGroup(item)"
-          >
-            🤝 加入拼单
-          </button>
-          <span v-else-if="isJoined(item.id)" class="joined-label">✅ 已加入</span>
-        </template>
-      </ItemCard>
+        <ItemCard
+          :title="item.title"
+          :description="item.description"
+          :tag="item.type"
+          :location="item.location"
+          :time="`截止 ${item.deadline}`"
+        >
+          <template #footer>
+            <span class="progress-text">
+              已拼 {{ item.currentCount }}/{{ item.targetCount }} 人
+            </span>
+            <span :class="['status-tag', item.status === 'open' ? 'open' : 'closed']">
+              {{ item.status === 'open' ? '拼单中' : '已结束' }}
+            </span>
+            <button
+              v-if="item.status === 'open' && item.currentCount < item.targetCount && !isJoined(item.id)"
+              class="join-btn"
+              @click.stop="joinGroup(item)"
+            >
+              🤝 加入拼单
+            </button>
+            <span v-else-if="isJoined(item.id)" class="joined-label">✅ 已加入</span>
+          </template>
+        </ItemCard>
+      </div>
     </div>
 
     <EmptyState
@@ -43,15 +48,17 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getGroupBuys, updateGroupBuy, type GroupBuyItem } from '../api/groupBuy'
 
+const router = useRouter()
 const groupBuys = ref<GroupBuyItem[]>([])
-const joinedIds = ref<number[]>(loadJoinedIds())
+const joinedIds = ref<(number | string)[]>(loadJoinedIds())
 
-function loadJoinedIds(): number[] {
+function loadJoinedIds(): (number | string)[] {
   try {
     return JSON.parse(localStorage.getItem('cm_orders_groupbuys') || '[]')
   } catch {
@@ -63,7 +70,7 @@ function saveJoinedIds() {
   localStorage.setItem('cm_orders_groupbuys', JSON.stringify(joinedIds.value))
 }
 
-function isJoined(id: number) {
+function isJoined(id: number | string) {
   return joinedIds.value.includes(id)
 }
 
@@ -88,6 +95,8 @@ async function joinGroup(item: GroupBuyItem) {
 .page-header h1 { margin: 0 0 8px; }
 .page-header p { margin: 0; color: #6b7280; }
 .list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.list-item { cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+.list-item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
 .progress-text { font-size: 13px; color: #059669; font-weight: 600; }
 .status-tag { margin-left: 8px; padding: 2px 10px; border-radius: 999px; font-size: 12px; }
 .status-tag.open { background: #dcfce7; color: #16a34a; }

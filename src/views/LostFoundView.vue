@@ -11,20 +11,25 @@
     </div>
 
     <div class="list">
-      <ItemCard
+      <div
         v-for="item in filteredItems"
         :key="item.id"
-        :title="item.title"
-        :description="item.description"
-        :tag="item.type === 'lost' ? '失物' : '招领'"
-        :location="item.location"
-        :time="item.eventTime"
+        class="list-item"
+        @click="router.push(`/detail/${item.id}?type=lostFound`)"
       >
-        <template #footer>
-          <span class="item-name">{{ item.itemName }}</span>
-          <span class="contact">{{ item.contact }}</span>
-        </template>
-      </ItemCard>
+        <ItemCard
+          :title="item.title"
+          :description="item.description"
+          :tag="item.type === 'lost' ? '失物' : '招领'"
+          :location="item.location"
+          :time="item.eventTime"
+        >
+          <template #footer>
+            <span class="item-name">{{ item.itemName }}</span>
+            <span class="contact">{{ item.contact }}</span>
+          </template>
+        </ItemCard>
+      </div>
     </div>
 
     <EmptyState
@@ -36,10 +41,12 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getLostFounds, type LostFoundItem } from '../api/lostFound'
 
+const router = useRouter()
 const lostFounds = ref<LostFoundItem[]>([])
 const tab = ref<'lost' | 'found'>('lost')
 
@@ -106,6 +113,16 @@ onMounted(async () => {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+}
+
+.list-item {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.list-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .item-name {
