@@ -85,6 +85,17 @@
     <!-- Account Settings Dialog -->
     <el-dialog v-model="showEditDialog" title="编辑资料" width="480px">
       <div class="edit-form">
+        <label>头像</label>
+        <div class="avatar-edit">
+          <div class="avatar-preview">
+            <img :src="editForm.avatar" alt="头像预览" />
+          </div>
+          <label class="avatar-upload-btn">
+            <input type="file" accept="image/*" class="avatar-upload-input" @change="handleAvatarUpload" />
+            {{ avatarUploading ? '上传中...' : '更换头像' }}
+          </label>
+          <button v-if="editForm.avatar !== profile.avatar && editForm.avatar !== defaultAvatar" type="button" class="avatar-reset-btn" @click="editForm.avatar = profile.avatar">还原</button>
+        </div>
         <label>昵称</label>
         <input v-model="editForm.name" class="form-input" />
         <label>手机号</label>
@@ -107,13 +118,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTrades, updateTrade, deleteTrade, type TradeItem } from '../api/trade'
-import { getLostFounds, deleteLostFound, type LostFoundItem } from '../api/lostFound'
-import { getGroupBuys, deleteGroupBuy, type GroupBuyItem } from '../api/groupBuy'
-import { getErrands, deleteErrand, type ErrandItem } from '../api/errand'
+import { getLostFounds, updateLostFound, deleteLostFound, type LostFoundItem } from '../api/lostFound'
+import { getGroupBuys, updateGroupBuy, deleteGroupBuy, type GroupBuyItem } from '../api/groupBuy'
+import { getErrands, updateErrand, deleteErrand, type ErrandItem } from '../api/errand'
 import { getFavorites, deleteFavorite, type FavoriteItem as ApiFavoriteItem } from '../api/favorite'
 
 const router = useRouter()
@@ -130,14 +141,82 @@ const profile = reactive({
   signature: '热爱生活，喜欢分享',
 })
 
+const defaultAvatar = profile.avatar
+
 const showEditDialog = ref(false)
 const editForm = reactive({ ...profile })
+const avatarUploading = ref(false)
 
-function saveProfile() {
+watch(showEditDialog, (opening) => {
+  if (opening) {
+    Object.assign(editForm, { ...profile })
+  }
+})
+
+function handleAvatarUpload(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  if (file.size > 5 * 1024 * 1024) {
+    ElMessage.warning('头像大小不能超过5MB')
+    return
+  }
+
+  avatarUploading.value = true
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    const base64 = ev.target?.result as string
+    editForm.avatar = base64
+    avatarUploading.value = false
+  }
+  reader.readAsDataURL(file)
+}
+
+async function saveProfile() {
+  const oldName = profile.name
+  const nameChanged = editForm.name !== oldName && editForm.name.trim() !== ''
+
   Object.assign(profile, { ...editForm })
   localStorage.setItem('cm_user_profile', JSON.stringify({ ...profile }))
   showEditDialog.value = false
   ElMessage.success('资料已更新')
+
+  if (nameChanged) {
+    const newName = editForm.name.trim()
+    try {
+      await syncPublisherName(oldName, newName)
+      ElMessage.success(`已同步 ${newName} 的发布信息`)
+    } catch {
+      ElMessage.warning('发布信息同步可能未完全成功，请刷新页面确认')
+    }
+  }
+}
+
+async function syncPublisherName(oldName: string, newName: string) {
+  const updates: Promise<unknown>[] = []
+
+  for (const t of allTrades.value) {
+    if (t.publisher === oldName) {
+      updates.push(updateTrade(t.id, { publisher: newName }))
+      t.publisher = newName
+    }
+  }
+  for (const g of allGroupBuys.value) {
+    if (g.publisher === oldName) {
+      updates.push(updateGroupBuy(g.id, { publisher: newName }))
+      g.publisher = newName
+    }
+  }
+  for (const e of allErrands.value) {
+    if (e.publisher === oldName) {
+      updates.push(updateErrand(e.id, { publisher: newName }))
+      e.publisher = newName
+    }
+  }
+
+  if (updates.length > 0) {
+    await Promise.all(updates)
+  }
 }
 
 function loadProfile() {
@@ -446,4 +525,12 @@ onMounted(async () => {
 .edit-form label { font-size: 13px; font-weight: 600; color: #475569; }
 .form-input { padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; width: 100%; box-sizing: border-box; }
 .form-input:focus { border-color: #3b82f6; }
+
+.avatar-edit { display: flex; align-items: center; gap: 12px; }
+.avatar-preview { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; border: 3px solid #e2e8f0; flex-shrink: 0; background: #f1f5f9; }
+.avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-upload-btn { padding: 8px 16px; background: #eff6ff; color: #2563eb; border: 1px solid #93c5fd; border-radius: 8px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.avatar-upload-btn:hover { background: #dbeafe; }
+.avatar-upload-input { display: none; }
+.avatar-reset-btn { padding: 8px 12px; background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; border-radius: 8px; font-size: 12px; cursor: pointer; }
 </style>
