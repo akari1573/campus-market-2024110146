@@ -24,13 +24,7 @@
             <span :class="['status-tag', getStatusClass(item.status)]">
               {{ getStatusText(item.status) }}
             </span>
-            <button class="favorite-btn" @click.stop="favoriteStore.toggleFavorite({
-              id: item.id,
-              type: 'errand',
-              title: item.title,
-              description: item.description,
-              location: `${item.from} → ${item.to}`
-            })">
+            <button class="favorite-btn" @click.stop="handleToggleFavorite(item)">
               {{ favoriteStore.isFavorite('errand', item.id) ? '已收藏' : '收藏' }}
             </button>
             <button
@@ -60,11 +54,40 @@ import { ElMessage } from 'element-plus'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getErrands, updateErrand, type ErrandItem } from '../api/errand'
+import { createFavorite, deleteFavorite, getFavorites } from '../api/favorite'
 import { useFavoriteStore } from '../stores/favorite'
 
 const router = useRouter()
 const favoriteStore = useFavoriteStore()
 const errands = ref<ErrandItem[]>([])
+const userId = 'user_001'
+
+async function handleToggleFavorite(item: ErrandItem) {
+  if (favoriteStore.isFavorite('errand', item.id)) {
+    const recordId = favoriteStore.getApiRecordId('errand', item.id)
+    if (recordId) {
+      try { await deleteFavorite(recordId) } catch { /* ignore */ }
+    }
+    favoriteStore.removeFavorite('errand', item.id)
+  } else {
+    try {
+      const res = await createFavorite({ itemType: 'errand', itemId: item.id, userId })
+      const recordId = res.data.id as string
+      favoriteStore.addFavorite({
+        id: item.id, type: 'errand',
+        title: item.title, description: item.description,
+        location: `${item.from} → ${item.to}`,
+        apiRecordId: recordId,
+      })
+    } catch {
+      favoriteStore.addFavorite({
+        id: item.id, type: 'errand',
+        title: item.title, description: item.description,
+        location: `${item.from} → ${item.to}`,
+      })
+    }
+  }
+}
 const takenIds = ref<(number | string)[]>(loadTakenIds())
 
 function loadTakenIds(): (number | string)[] {
@@ -86,6 +109,21 @@ function isTaken(id: number | string) {
 onMounted(async () => {
   const res = await getErrands()
   errands.value = res.data
+
+  try {
+    const favRes = await getFavorites({ itemType: 'errand', userId })
+    for (const fav of favRes.data) {
+      const e = errands.value.find((x) => String(x.id) === String(fav.itemId))
+      if (e && !favoriteStore.isFavorite('errand', e.id)) {
+        favoriteStore.addFavorite({
+          id: e.id, type: 'errand',
+          title: e.title, description: e.description,
+          location: `${e.from} → ${e.to}`,
+          apiRecordId: fav.id,
+        })
+      }
+    }
+  } catch { /* ignore */ }
 })
 
 function getStatusText(status: string) {

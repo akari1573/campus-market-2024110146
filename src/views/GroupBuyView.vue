@@ -26,13 +26,7 @@
             <span :class="['status-tag', item.status === 'open' ? 'open' : 'closed']">
               {{ item.status === 'open' ? '拼单中' : '已结束' }}
             </span>
-            <button class="favorite-btn" @click.stop="favoriteStore.toggleFavorite({
-              id: item.id,
-              type: 'groupBuy',
-              title: item.title,
-              description: item.description,
-              location: item.location
-            })">
+            <button class="favorite-btn" @click.stop="handleToggleFavorite(item)">
               {{ favoriteStore.isFavorite('groupBuy', item.id) ? '已收藏' : '收藏' }}
             </button>
             <button
@@ -62,11 +56,38 @@ import { ElMessage } from 'element-plus'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getGroupBuys, updateGroupBuy, type GroupBuyItem } from '../api/groupBuy'
+import { createFavorite, deleteFavorite, getFavorites } from '../api/favorite'
 import { useFavoriteStore } from '../stores/favorite'
 
 const router = useRouter()
 const favoriteStore = useFavoriteStore()
 const groupBuys = ref<GroupBuyItem[]>([])
+const userId = 'user_001'
+
+async function handleToggleFavorite(item: GroupBuyItem) {
+  if (favoriteStore.isFavorite('groupBuy', item.id)) {
+    const recordId = favoriteStore.getApiRecordId('groupBuy', item.id)
+    if (recordId) {
+      try { await deleteFavorite(recordId) } catch { /* ignore */ }
+    }
+    favoriteStore.removeFavorite('groupBuy', item.id)
+  } else {
+    try {
+      const res = await createFavorite({ itemType: 'groupBuy', itemId: item.id, userId })
+      const recordId = res.data.id as string
+      favoriteStore.addFavorite({
+        id: item.id, type: 'groupBuy',
+        title: item.title, description: item.description, location: item.location,
+        apiRecordId: recordId,
+      })
+    } catch {
+      favoriteStore.addFavorite({
+        id: item.id, type: 'groupBuy',
+        title: item.title, description: item.description, location: item.location,
+      })
+    }
+  }
+}
 const joinedIds = ref<(number | string)[]>(loadJoinedIds())
 
 function loadJoinedIds(): (number | string)[] {
@@ -88,6 +109,20 @@ function isJoined(id: number | string) {
 onMounted(async () => {
   const res = await getGroupBuys()
   groupBuys.value = res.data
+
+  try {
+    const favRes = await getFavorites({ itemType: 'groupBuy', userId })
+    for (const fav of favRes.data) {
+      const gb = groupBuys.value.find((x) => String(x.id) === String(fav.itemId))
+      if (gb && !favoriteStore.isFavorite('groupBuy', gb.id)) {
+        favoriteStore.addFavorite({
+          id: gb.id, type: 'groupBuy',
+          title: gb.title, description: gb.description, location: gb.location,
+          apiRecordId: fav.id,
+        })
+      }
+    }
+  } catch { /* ignore */ }
 })
 
 async function joinGroup(item: GroupBuyItem) {

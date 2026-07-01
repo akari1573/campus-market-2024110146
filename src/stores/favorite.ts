@@ -6,6 +6,7 @@ export interface FavoriteItem {
   title: string
   description: string
   location?: string
+  apiRecordId?: string | null
 }
 
 export const useFavoriteStore = defineStore('favorite', {
@@ -42,6 +43,22 @@ export const useFavoriteStore = defineStore('favorite', {
       } else {
         this.addFavorite(item)
       }
+    },
+
+    setApiRecordId(type: FavoriteItem['type'], id: number | string, recordId: string) {
+      const item = this.favorites.find(
+        (f) => f.type === type && String(f.id) === String(id),
+      )
+      if (item) {
+        item.apiRecordId = recordId
+      }
+    },
+
+    getApiRecordId(type: FavoriteItem['type'], id: number | string): string | null | undefined {
+      const item = this.favorites.find(
+        (f) => f.type === type && String(f.id) === String(id),
+      )
+      return item?.apiRecordId
     },
   },
 })

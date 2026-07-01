@@ -27,13 +27,7 @@
           <template #footer>
             <span class="item-name">{{ item.itemName }}</span>
             <span class="contact">{{ item.contact }}</span>
-            <button class="favorite-btn" @click.stop="favoriteStore.toggleFavorite({
-              id: item.id,
-              type: 'lostFound',
-              title: item.title,
-              description: item.description,
-              location: item.location
-            })">
+            <button class="favorite-btn" @click.stop="handleToggleFavorite(item)">
               {{ favoriteStore.isFavorite('lostFound', item.id) ? '已收藏' : '收藏' }}
             </button>
           </template>
@@ -54,11 +48,38 @@ import { useRouter } from 'vue-router'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getLostFounds, type LostFoundItem } from '../api/lostFound'
+import { createFavorite, deleteFavorite, getFavorites } from '../api/favorite'
 import { useFavoriteStore } from '../stores/favorite'
 
 const router = useRouter()
 const favoriteStore = useFavoriteStore()
 const lostFounds = ref<LostFoundItem[]>([])
+const userId = 'user_001'
+
+async function handleToggleFavorite(item: LostFoundItem) {
+  if (favoriteStore.isFavorite('lostFound', item.id)) {
+    const recordId = favoriteStore.getApiRecordId('lostFound', item.id)
+    if (recordId) {
+      try { await deleteFavorite(recordId) } catch { /* ignore */ }
+    }
+    favoriteStore.removeFavorite('lostFound', item.id)
+  } else {
+    try {
+      const res = await createFavorite({ itemType: 'lostFound', itemId: item.id, userId })
+      const recordId = res.data.id as string
+      favoriteStore.addFavorite({
+        id: item.id, type: 'lostFound',
+        title: item.title, description: item.description, location: item.location,
+        apiRecordId: recordId,
+      })
+    } catch {
+      favoriteStore.addFavorite({
+        id: item.id, type: 'lostFound',
+        title: item.title, description: item.description, location: item.location,
+      })
+    }
+  }
+}
 const tab = ref<'lost' | 'found'>('lost')
 
 const filteredItems = computed(() =>
@@ -68,6 +89,20 @@ const filteredItems = computed(() =>
 onMounted(async () => {
   const res = await getLostFounds()
   lostFounds.value = res.data
+
+  try {
+    const favRes = await getFavorites({ itemType: 'lostFound', userId })
+    for (const fav of favRes.data) {
+      const lf = lostFounds.value.find((x) => String(x.id) === String(fav.itemId))
+      if (lf && !favoriteStore.isFavorite('lostFound', lf.id)) {
+        favoriteStore.addFavorite({
+          id: lf.id, type: 'lostFound',
+          title: lf.title, description: lf.description, location: lf.location,
+          apiRecordId: fav.id,
+        })
+      }
+    }
+  } catch { /* ignore */ }
 })
 </script>
 

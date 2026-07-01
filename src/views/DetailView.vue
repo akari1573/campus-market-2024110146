@@ -203,11 +203,13 @@ import { getLostFoundById, updateLostFound, deleteLostFound, type LostFoundItem 
 import { getGroupBuyById, updateGroupBuy, deleteGroupBuy, type GroupBuyItem } from '../api/groupBuy'
 import { getErrandById, updateErrand, deleteErrand, type ErrandItem } from '../api/errand'
 import { getFavorites, createFavorite, deleteFavorite, type FavoriteItem } from '../api/favorite'
+import { useFavoriteStore } from '../stores/favorite'
 
 type ItemType = 'trade' | 'lostFound' | 'groupBuy' | 'errand'
 
 const route = useRoute()
 const router = useRouter()
+const favoriteStore = useFavoriteStore()
 const id = route.params.id as string
 const itemType = (route.query.type as ItemType) || 'trade'
 const detail = ref<TradeItem | LostFoundItem | GroupBuyItem | ErrandItem | null>(null)
@@ -264,6 +266,17 @@ onMounted(async () => {
     if (first && first.id) {
       isFavorited.value = true
       favoriteRecordId.value = first.id
+      const info = getDetailInfo()
+      if (!favoriteStore.isFavorite(itemType, id)) {
+      favoriteStore.addFavorite({
+        id,
+        type: itemType,
+        title: info.title,
+        description: info.description,
+        location: info.location || undefined,
+        apiRecordId: first.id,
+      })
+      }
     }
   } catch { /* ignore */ }
 })
@@ -275,12 +288,30 @@ function contactItem() {
   }
 }
 
+function getDetailInfo() {
+  if (!detail.value) return { title: '', description: '', location: '' }
+  const d = detail.value as Record<string, unknown>
+  let location = ''
+  if (itemType === 'errand') {
+    location = `${d.from || ''} → ${d.to || ''}`
+  } else {
+    location = (d.location as string) || ''
+  }
+  return {
+    title: (d.title as string) || '',
+    description: (d.description as string) || '',
+    location,
+  }
+}
+
 async function toggleFavorite() {
+  const info = getDetailInfo()
   if (isFavorited.value && favoriteRecordId.value) {
     try {
       await deleteFavorite(favoriteRecordId.value)
       isFavorited.value = false
       favoriteRecordId.value = null
+      favoriteStore.removeFavorite(itemType, id)
       ElMessage.success('已取消收藏')
     } catch {
       ElMessage.error('取消收藏失败')
@@ -294,6 +325,14 @@ async function toggleFavorite() {
       })
       isFavorited.value = true
       favoriteRecordId.value = res.data.id as string
+      favoriteStore.addFavorite({
+        id,
+        type: itemType,
+        title: info.title,
+        description: info.description,
+        location: info.location || undefined,
+        apiRecordId: res.data.id as string,
+      })
       ElMessage.success('⭐ 已加入收藏')
     } catch {
       ElMessage.error('收藏失败，请检查 Mock 服务')

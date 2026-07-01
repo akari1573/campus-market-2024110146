@@ -22,13 +22,7 @@
           <template #footer>
             <strong>￥{{ item.price }}</strong>
             <span class="condition">{{ item.condition }}</span>
-            <button class="favorite-btn" @click.stop="favoriteStore.toggleFavorite({
-              id: item.id,
-              type: 'trade',
-              title: item.title,
-              description: item.description,
-              location: item.location
-            })">
+            <button class="favorite-btn" @click.stop="handleToggleFavorite(item)">
               {{ favoriteStore.isFavorite('trade', item.id) ? '已收藏' : '收藏' }}
             </button>
           </template>
@@ -49,15 +43,56 @@ import { useRouter } from 'vue-router'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getTrades, type TradeItem } from '../api/trade'
+import { createFavorite, deleteFavorite, getFavorites } from '../api/favorite'
 import { useFavoriteStore } from '../stores/favorite'
 
 const router = useRouter()
 const favoriteStore = useFavoriteStore()
 const trades = ref<TradeItem[]>([])
+const userId = 'user_001'
+
+async function handleToggleFavorite(item: TradeItem) {
+  if (favoriteStore.isFavorite('trade', item.id)) {
+    const recordId = favoriteStore.getApiRecordId('trade', item.id)
+    if (recordId) {
+      try { await deleteFavorite(recordId) } catch { /* ignore */ }
+    }
+    favoriteStore.removeFavorite('trade', item.id)
+  } else {
+    try {
+      const res = await createFavorite({ itemType: 'trade', itemId: item.id, userId })
+      const recordId = res.data.id as string
+      favoriteStore.addFavorite({
+        id: item.id, type: 'trade',
+        title: item.title, description: item.description, location: item.location,
+        apiRecordId: recordId,
+      })
+    } catch {
+      favoriteStore.addFavorite({
+        id: item.id, type: 'trade',
+        title: item.title, description: item.description, location: item.location,
+      })
+    }
+  }
+}
 
 onMounted(async () => {
   const res = await getTrades()
   trades.value = res.data
+
+  try {
+    const favRes = await getFavorites({ itemType: 'trade', userId })
+    for (const fav of favRes.data) {
+      const t = trades.value.find((x) => String(x.id) === String(fav.itemId))
+      if (t && !favoriteStore.isFavorite('trade', t.id)) {
+        favoriteStore.addFavorite({
+          id: t.id, type: 'trade',
+          title: t.title, description: t.description, location: t.location,
+          apiRecordId: fav.id,
+        })
+      }
+    }
+  } catch { /* ignore */ }
 })
 </script>
 
