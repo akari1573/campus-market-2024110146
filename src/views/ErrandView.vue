@@ -24,6 +24,15 @@
             <span :class="['status-tag', getStatusClass(item.status)]">
               {{ getStatusText(item.status) }}
             </span>
+            <button class="favorite-btn" @click.stop="favoriteStore.toggleFavorite({
+              id: item.id,
+              type: 'errand',
+              title: item.title,
+              description: item.description,
+              location: `${item.from} → ${item.to}`
+            })">
+              {{ favoriteStore.isFavorite('errand', item.id) ? '已收藏' : '收藏' }}
+            </button>
             <button
               v-if="item.status === 'open' && !isTaken(item.id)"
               class="take-btn"
@@ -51,8 +60,10 @@ import { ElMessage } from 'element-plus'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getErrands, updateErrand, type ErrandItem } from '../api/errand'
+import { useFavoriteStore } from '../stores/favorite'
 
 const router = useRouter()
+const favoriteStore = useFavoriteStore()
 const errands = ref<ErrandItem[]>([])
 const takenIds = ref<(number | string)[]>(loadTakenIds())
 
@@ -114,4 +125,13 @@ async function takeTask(item: ErrandItem) {
 .take-btn { margin-left: 12px; padding: 4px 14px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
 .take-btn:hover { transform: translateY(-1px); }
 .taken-label { margin-left: 12px; font-size: 12px; color: #2563eb; font-weight: 600; }
+.favorite-btn {
+  margin-left: 12px;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #374151;
+}
 </style>

@@ -26,6 +26,15 @@
             <span :class="['status-tag', item.status === 'open' ? 'open' : 'closed']">
               {{ item.status === 'open' ? '拼单中' : '已结束' }}
             </span>
+            <button class="favorite-btn" @click.stop="favoriteStore.toggleFavorite({
+              id: item.id,
+              type: 'groupBuy',
+              title: item.title,
+              description: item.description,
+              location: item.location
+            })">
+              {{ favoriteStore.isFavorite('groupBuy', item.id) ? '已收藏' : '收藏' }}
+            </button>
             <button
               v-if="item.status === 'open' && item.currentCount < item.targetCount && !isJoined(item.id)"
               class="join-btn"
@@ -53,8 +62,10 @@ import { ElMessage } from 'element-plus'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getGroupBuys, updateGroupBuy, type GroupBuyItem } from '../api/groupBuy'
+import { useFavoriteStore } from '../stores/favorite'
 
 const router = useRouter()
+const favoriteStore = useFavoriteStore()
 const groupBuys = ref<GroupBuyItem[]>([])
 const joinedIds = ref<(number | string)[]>(loadJoinedIds())
 
@@ -104,4 +115,13 @@ async function joinGroup(item: GroupBuyItem) {
 .join-btn { margin-left: 12px; padding: 4px 14px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
 .join-btn:hover { transform: translateY(-1px); }
 .joined-label { margin-left: 12px; font-size: 12px; color: #16a34a; font-weight: 600; }
+.favorite-btn {
+  margin-left: 12px;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #374151;
+}
 </style>

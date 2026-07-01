@@ -138,21 +138,12 @@ import { createTrade } from '../api/trade'
 import { createLostFound } from '../api/lostFound'
 import { createGroupBuy } from '../api/groupBuy'
 import { createErrand } from '../api/errand'
+import { useUserStore } from '../stores/user'
 
 type PublishType = 'trade' | 'lostFound' | 'groupBuy' | 'errand'
 
-function getPublisherName(): string {
-  try {
-    const saved = localStorage.getItem('cm_user_profile')
-    if (saved) {
-      const profile = JSON.parse(saved)
-      if (profile.name) return profile.name
-    }
-  } catch { /* ignore */ }
-  return '张三同学'
-}
-
 const router = useRouter()
+const userStore = useUserStore()
 const publishType = ref<PublishType>('trade')
 const submitting = ref(false)
 const imagePreview = ref('')
@@ -300,7 +291,7 @@ async function handleSubmit() {
         price: form.tradePrice,
         condition: form.condition,
         location: form.location,
-        publisher: getPublisherName(),
+        publisher: userStore.displayName,
         publishTime: getCurrentTime(),
         image: form.image || 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&h=400&fit=crop',
         status: 'open',
@@ -333,7 +324,7 @@ async function handleSubmit() {
         currentCount: 1,
         deadline: form.deadline,
         location: form.location,
-        publisher: getPublisherName(),
+        publisher: userStore.displayName,
         status: 'open',
         description: form.description,
       })
@@ -349,7 +340,7 @@ async function handleSubmit() {
         from: form.from,
         to: form.to,
         deadline: form.deadline,
-        publisher: getPublisherName(),
+        publisher: userStore.displayName,
         status: 'open',
         description: form.description,
       })

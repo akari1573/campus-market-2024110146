@@ -122,17 +122,29 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getTrades, updateTrade, deleteTrade, type TradeItem } from '../api/trade'
-import { getLostFounds, updateLostFound, deleteLostFound, type LostFoundItem } from '../api/lostFound'
+import { getLostFounds, deleteLostFound, type LostFoundItem } from '../api/lostFound'
 import { getGroupBuys, updateGroupBuy, deleteGroupBuy, type GroupBuyItem } from '../api/groupBuy'
 import { getErrands, updateErrand, deleteErrand, type ErrandItem } from '../api/errand'
 import { getFavorites, deleteFavorite, type FavoriteItem as ApiFavoriteItem } from '../api/favorite'
+import { useUserStore } from '../stores/user'
+import { useFavoriteStore } from '../stores/favorite'
 
 const router = useRouter()
-const currentUser = '张三同学'
+const userStore = useUserStore()
+const favoriteStore = useFavoriteStore()
+
+function syncProfileToStore() {
+  userStore.updateProfile({
+    name: profile.name,
+    college: profile.college,
+    avatar: profile.avatar,
+    bio: profile.signature,
+  })
+}
 
 // Profile
 const profile = reactive({
-  name: currentUser,
+  name: userStore.displayName,
   avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=220&h=220&fit=crop',
   phone: '138xxxx1234',
   campus: '校本部',
@@ -178,6 +190,7 @@ async function saveProfile() {
 
   Object.assign(profile, { ...editForm })
   localStorage.setItem('cm_user_profile', JSON.stringify({ ...profile }))
+  syncProfileToStore()
   showEditDialog.value = false
   ElMessage.success('资料已更新')
 
@@ -224,6 +237,7 @@ function loadProfile() {
     const saved = localStorage.getItem('cm_user_profile')
     if (saved) Object.assign(profile, JSON.parse(saved))
   } catch { /* ignore */ }
+  syncProfileToStore()
 }
 
 // Published - all types
@@ -330,9 +344,49 @@ async function deleteMyItem(item: PublishedItem) {
   } catch { /* cancelled */ }
 }
 
+const allFavorites = ref<ApiFavoriteItem[]>([])
+
+// Sync favorites from server into Pinia store
+function syncServerFavoritesToStore() {
+  for (const fav of allFavorites.value) {
+    const type = fav.itemType
+    const id = fav.itemId
+
+    let title = ''
+    let desc = ''
+    let location: string | undefined
+
+    if (type === 'trade') {
+      const t = allTrades.value.find((x) => String(x.id) === String(id))
+      if (t) { title = t.title; desc = t.description; location = t.location }
+    } else if (type === 'groupBuy') {
+      const g = allGroupBuys.value.find((x) => String(x.id) === String(id))
+      if (g) { title = g.title; desc = g.description; location = g.location }
+    } else if (type === 'errand') {
+      const e = allErrands.value.find((x) => String(x.id) === String(id))
+      if (e) { title = e.title; desc = e.description; location = `${e.from} → ${e.to}` }
+    } else if (type === 'lostFound') {
+      const lf = allLostFounds.value.find((x) => String(x.id) === String(id))
+      if (lf) { title = lf.title; desc = lf.description; location = lf.location }
+    }
+
+    if (title && !favoriteStore.isFavorite(type, id)) {
+      favoriteStore.addFavorite({ id, type, title, description: desc, location })
+    }
+  }
+}
 // Favorites
 const showFavorites = ref(false)
-const allFavorites = ref<ApiFavoriteItem[]>([])
+
+const favoriteItems = computed(() => {
+  return favoriteStore.favorites.map((f) => ({
+    _key: `${f.type}-${f.id}`,
+    _type: f.type,
+    _meta: f.location || '',
+    id: f.id,
+    title: f.title,
+  }))
+})
 
 async function loadFavoritesFromServer() {
   try {
@@ -342,49 +396,17 @@ async function loadFavoritesFromServer() {
 }
 
 async function removeFavorite(type: string, id: number | string) {
-  const fav = allFavorites.value.find((f) => f.itemType === type && f.itemId === id)
+  favoriteStore.removeFavorite(type as 'trade' | 'lostFound' | 'groupBuy' | 'errand', id)
+  const fav = allFavorites.value.find((f) => f.itemType === type && String(f.itemId) === String(id))
   if (!fav || !fav.id) return
   try {
     await deleteFavorite(fav.id)
     allFavorites.value = allFavorites.value.filter((f) => f.id !== fav.id)
     ElMessage.success('已取消收藏')
   } catch {
-    ElMessage.error('取消收藏失败')
+    ElMessage.warning('已从本地移除，服务器同步可能需要刷新')
   }
 }
-
-interface FavoriteDisplayItem {
-  _key: string
-  id: number | string
-  _type: string
-  title: string
-  _meta: string
-}
-
-const favoriteItems = computed<FavoriteDisplayItem[]>(() => {
-  const result: FavoriteDisplayItem[] = []
-
-  for (const fav of allFavorites.value) {
-    const type = fav.itemType
-    const itemId = fav.itemId
-
-    if (type === 'trade') {
-      const t = allTrades.value.find((x) => String(x.id) === String(itemId))
-      if (t) result.push({ _key: `fav-trade-${t.id}`, id: t.id, _type: 'trade', title: t.title, _meta: `¥${t.price}` })
-    } else if (type === 'groupBuy') {
-      const g = allGroupBuys.value.find((x) => String(x.id) === String(itemId))
-      if (g) result.push({ _key: `fav-gb-${g.id}`, id: g.id, _type: 'groupBuy', title: g.title, _meta: `${g.currentCount}/${g.targetCount}人` })
-    } else if (type === 'errand') {
-      const e = allErrands.value.find((x) => String(x.id) === String(itemId))
-      if (e) result.push({ _key: `fav-er-${e.id}`, id: e.id, _type: 'errand', title: e.title, _meta: `¥${e.reward}` })
-    } else if (type === 'lostFound') {
-      const lf = allLostFounds.value.find((x) => String(x.id) === String(itemId))
-      if (lf) result.push({ _key: `fav-lf-${lf.id}`, id: lf.id, _type: 'lostFound', title: lf.title, _meta: lf.type === 'lost' ? '寻物' : '招领' })
-    }
-  }
-
-  return result
-})
 
 // My Orders
 const joinedBuyIds = ref<(number | string)[]>(loadIds('cm_orders_groupbuys'))
@@ -468,6 +490,7 @@ onMounted(async () => {
   allGroupBuys.value = gb.data
   allErrands.value = e.data
   await loadFavoritesFromServer()
+  syncServerFavoritesToStore()
 })
 </script>
 

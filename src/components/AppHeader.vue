@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import AppNav from './AppNav.vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '../stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 </script>
 
 <template>
@@ -12,6 +14,7 @@ const router = useRouter()
     </div>
     <AppNav />
     <div class="actions">
+      <span class="user-mini" @click="router.push('/user')">{{ userStore.displayName }}</span>
       <el-button size="default" type="primary" @click="router.push('/publish')">发布信息</el-button>
     </div>
   </header>
@@ -32,5 +35,7 @@ const router = useRouter()
   background: linear-gradient(135deg, #3b82f6, #06b6d4);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.actions { margin-left: 18px; }
+.actions { margin-left: 18px; display: flex; align-items: center; gap: 12px; }
+.user-mini { font-size: 14px; color: #374151; cursor: pointer; }
+.user-mini:hover { color: #3b82f6; }
 </style>

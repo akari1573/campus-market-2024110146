@@ -22,6 +22,15 @@
           <template #footer>
             <strong>￥{{ item.price }}</strong>
             <span class="condition">{{ item.condition }}</span>
+            <button class="favorite-btn" @click.stop="favoriteStore.toggleFavorite({
+              id: item.id,
+              type: 'trade',
+              title: item.title,
+              description: item.description,
+              location: item.location
+            })">
+              {{ favoriteStore.isFavorite('trade', item.id) ? '已收藏' : '收藏' }}
+            </button>
           </template>
         </ItemCard>
       </div>
@@ -40,8 +49,10 @@ import { useRouter } from 'vue-router'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getTrades, type TradeItem } from '../api/trade'
+import { useFavoriteStore } from '../stores/favorite'
 
 const router = useRouter()
+const favoriteStore = useFavoriteStore()
 const trades = ref<TradeItem[]>([])
 
 onMounted(async () => {
@@ -91,5 +102,15 @@ onMounted(async () => {
 .condition {
   margin-left: 12px;
   color: #6b7280;
+}
+
+.favorite-btn {
+  margin-left: 12px;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #374151;
 }
 </style>

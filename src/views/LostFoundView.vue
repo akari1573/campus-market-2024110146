@@ -27,6 +27,15 @@
           <template #footer>
             <span class="item-name">{{ item.itemName }}</span>
             <span class="contact">{{ item.contact }}</span>
+            <button class="favorite-btn" @click.stop="favoriteStore.toggleFavorite({
+              id: item.id,
+              type: 'lostFound',
+              title: item.title,
+              description: item.description,
+              location: item.location
+            })">
+              {{ favoriteStore.isFavorite('lostFound', item.id) ? '已收藏' : '收藏' }}
+            </button>
           </template>
         </ItemCard>
       </div>
@@ -45,8 +54,10 @@ import { useRouter } from 'vue-router'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
 import { getLostFounds, type LostFoundItem } from '../api/lostFound'
+import { useFavoriteStore } from '../stores/favorite'
 
 const router = useRouter()
+const favoriteStore = useFavoriteStore()
 const lostFounds = ref<LostFoundItem[]>([])
 const tab = ref<'lost' | 'found'>('lost')
 
@@ -134,5 +145,15 @@ onMounted(async () => {
   margin-left: 16px;
   font-size: 12px;
   color: #9ca3af;
+}
+
+.favorite-btn {
+  margin-left: 12px;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #374151;
 }
 </style>
