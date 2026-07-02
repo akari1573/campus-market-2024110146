@@ -5,9 +5,31 @@
       <p>发布跑腿任务，找人帮你办事。</p>
     </div>
 
-    <div class="list">
+    <SearchBar
+      v-model="keyword"
+      placeholder="搜索任务标题、类型、地点或描述"
+    />
+
+    <LoadingState
+      v-if="loading"
+      text="正在加载跑腿委托信息..."
+    />
+
+    <ErrorState
+      v-else-if="error"
+      message="跑腿委托数据加载失败，请检查 Mock 服务是否正常运行。"
+      show-retry
+      @retry="loadErrands"
+    />
+
+    <EmptyState
+      v-else-if="filteredErrands.length === 0"
+      text="暂无符合条件的委托任务"
+    />
+
+    <div v-else class="list">
       <div
-        v-for="item in errands"
+        v-for="item in filteredErrands"
         :key="item.id"
         class="list-item"
         @click="router.push(`/detail/${item.id}?type=errand`)"
@@ -24,7 +46,11 @@
             <span :class="['status-tag', getStatusClass(item.status)]">
               {{ getStatusText(item.status) }}
             </span>
-            <button class="favorite-btn" @click.stop="handleToggleFavorite(item)">
+            <button
+              class="favorite-btn"
+              :class="{ active: favoriteStore.isFavorite('errand', item.id) }"
+              @click.stop="handleToggleFavorite(item)"
+            >
               {{ favoriteStore.isFavorite('errand', item.id) ? '已收藏' : '收藏' }}
             </button>
             <button
@@ -32,27 +58,25 @@
               class="take-btn"
               @click.stop="takeTask(item)"
             >
-              ✋ 我要接单
+              我要接单
             </button>
-            <span v-else-if="isTaken(item.id)" class="taken-label">✅ 已接单</span>
+            <span v-else-if="isTaken(item.id)" class="taken-label">已接单</span>
           </template>
         </ItemCard>
       </div>
     </div>
-
-    <EmptyState
-      v-if="errands.length === 0"
-      text="暂无委托任务"
-    />
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
+import ErrorState from '../components/ErrorState.vue'
+import LoadingState from '../components/LoadingState.vue'
+import SearchBar from '../components/SearchBar.vue'
 import { getErrands, updateErrand, type ErrandItem } from '../api/errand'
 import { createFavorite, deleteFavorite, getFavorites } from '../api/favorite'
 import { useFavoriteStore } from '../stores/favorite'
@@ -60,7 +84,59 @@ import { useFavoriteStore } from '../stores/favorite'
 const router = useRouter()
 const favoriteStore = useFavoriteStore()
 const errands = ref<ErrandItem[]>([])
+const loading = ref(false)
+const error = ref(false)
 const userId = 'user_001'
+
+const keyword = ref('')
+
+const filteredErrands = computed(() => {
+  const value = keyword.value.trim()
+
+  if (!value) {
+    return errands.value
+  }
+
+  return errands.value.filter((item) => {
+    return (
+      item.title.includes(value) ||
+      item.taskType.includes(value) ||
+      item.from.includes(value) ||
+      item.to.includes(value) ||
+      item.description.includes(value)
+    )
+  })
+})
+
+async function loadErrands() {
+  loading.value = true
+  error.value = false
+
+  try {
+    const res = await getErrands()
+    errands.value = res.data
+
+    try {
+      const favRes = await getFavorites({ itemType: 'errand', userId })
+      for (const fav of favRes.data) {
+        const e = errands.value.find((x) => String(x.id) === String(fav.itemId))
+        if (e && !favoriteStore.isFavorite('errand', e.id)) {
+          favoriteStore.addFavorite({
+            id: e.id, type: 'errand',
+            title: e.title, description: e.description,
+            location: `${e.from} → ${e.to}`,
+            apiRecordId: fav.id,
+          })
+        }
+      }
+    } catch { /* ignore */ }
+  } catch (err) {
+    console.error(err)
+    error.value = true
+  } finally {
+    loading.value = false
+  }
+}
 
 async function handleToggleFavorite(item: ErrandItem) {
   if (favoriteStore.isFavorite('errand', item.id)) {
@@ -88,6 +164,7 @@ async function handleToggleFavorite(item: ErrandItem) {
     }
   }
 }
+
 const takenIds = ref<(number | string)[]>(loadTakenIds())
 
 function loadTakenIds(): (number | string)[] {
@@ -106,26 +183,6 @@ function isTaken(id: number | string) {
   return takenIds.value.includes(id)
 }
 
-onMounted(async () => {
-  const res = await getErrands()
-  errands.value = res.data
-
-  try {
-    const favRes = await getFavorites({ itemType: 'errand', userId })
-    for (const fav of favRes.data) {
-      const e = errands.value.find((x) => String(x.id) === String(fav.itemId))
-      if (e && !favoriteStore.isFavorite('errand', e.id)) {
-        favoriteStore.addFavorite({
-          id: e.id, type: 'errand',
-          title: e.title, description: e.description,
-          location: `${e.from} → ${e.to}`,
-          apiRecordId: fav.id,
-        })
-      }
-    }
-  } catch { /* ignore */ }
-})
-
 function getStatusText(status: string) {
   if (status === 'open') return '待接单'
   if (status === 'done') return '已完成'
@@ -143,8 +200,12 @@ async function takeTask(item: ErrandItem) {
   item.status = 'taken'
   takenIds.value.push(item.id)
   saveTakenIds()
-  ElMessage.success('✅ 接单成功！请及时联系发布者确认取件信息。')
+  ElMessage.success('接单成功！请及时联系发布者确认取件信息。')
 }
+
+onMounted(() => {
+  loadErrands()
+})
 </script>
 
 <style scoped>
@@ -171,5 +232,9 @@ async function takeTask(item: ErrandItem) {
   cursor: pointer;
   background: #f3f4f6;
   color: #374151;
+}
+.favorite-btn.active {
+  background: #dbeafe;
+  color: #2563eb;
 }
 </style>

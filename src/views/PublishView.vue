@@ -31,15 +31,15 @@
         </FormField>
 
         <FormField label="标题" required :error="errors.title">
-          <input v-model.trim="form.title" type="text" class="form-input" placeholder="请输入标题" />
+          <input v-model.trim="form.title" type="text" class="form-input" placeholder="请输入信息标题（如：九成新机械键盘转让）" />
         </FormField>
 
         <FormField label="地点" required :error="errors.location">
-          <input v-model.trim="form.location" type="text" class="form-input" placeholder="请输入地点" />
+          <input v-model.trim="form.location" type="text" class="form-input" placeholder="请输入地点（如：西区食堂、图书馆一楼）" />
         </FormField>
 
         <FormField label="描述" required :error="errors.description">
-          <textarea v-model.trim="form.description" class="form-input form-textarea" rows="4" placeholder="请简要描述具体情况"></textarea>
+          <textarea v-model.trim="form.description" class="form-input form-textarea" rows="4" placeholder="请简要描述具体情况（如：物品成色、使用时间、交易方式等）"></textarea>
         </FormField>
 
         <template v-if="publishType === 'trade'">
@@ -130,7 +130,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import FormField from '../components/FormField.vue'
@@ -172,6 +172,10 @@ const form = reactive({
 })
 
 const errors = reactive<Record<string, string>>({})
+
+watch(publishType, () => {
+  resetForm()
+})
 
 function handleImageUpload(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]

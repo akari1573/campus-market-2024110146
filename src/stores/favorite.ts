@@ -37,23 +37,6 @@ export const useFavoriteStore = defineStore('favorite', {
       })
     },
 
-    toggleFavorite(item: FavoriteItem) {
-      if (this.isFavorite(item.type, item.id)) {
-        this.removeFavorite(item.type, item.id)
-      } else {
-        this.addFavorite(item)
-      }
-    },
-
-    setApiRecordId(type: FavoriteItem['type'], id: number | string, recordId: string) {
-      const item = this.favorites.find(
-        (f) => f.type === type && String(f.id) === String(id),
-      )
-      if (item) {
-        item.apiRecordId = recordId
-      }
-    },
-
     getApiRecordId(type: FavoriteItem['type'], id: number | string): string | null | undefined {
       const item = this.favorites.find(
         (f) => f.type === type && String(f.id) === String(id),

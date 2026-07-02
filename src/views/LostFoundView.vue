@@ -5,12 +5,36 @@
       <p>丢了东西别着急，捡到东西来这里。</p>
     </div>
 
-    <div class="tab-bar">
-      <button :class="['tab-btn', { active: tab === 'lost' }]" @click="tab = 'lost'">失物信息</button>
-      <button :class="['tab-btn', { active: tab === 'found' }]" @click="tab = 'found'">招领信息</button>
+    <div class="filter-row">
+      <div class="tab-bar">
+        <button :class="['tab-btn', { active: tab === 'lost' }]" @click="tab = 'lost'">失物信息</button>
+        <button :class="['tab-btn', { active: tab === 'found' }]" @click="tab = 'found'">招领信息</button>
+      </div>
+
+      <SearchBar
+        v-model="keyword"
+        placeholder="搜索物品名称、标题、地点或描述"
+      />
     </div>
 
-    <div class="list">
+    <LoadingState
+      v-if="loading"
+      :text="tab === 'lost' ? '正在加载失物信息...' : '正在加载招领信息...'"
+    />
+
+    <ErrorState
+      v-else-if="error"
+      message="失物招领数据加载失败，请检查 Mock 服务是否正常运行。"
+      show-retry
+      @retry="loadLostFounds"
+    />
+
+    <EmptyState
+      v-else-if="filteredItems.length === 0"
+      :text="tab === 'lost' ? '暂无失物信息' : '暂无招领信息'"
+    />
+
+    <div v-else class="list">
       <div
         v-for="item in filteredItems"
         :key="item.id"
@@ -27,26 +51,28 @@
           <template #footer>
             <span class="item-name">{{ item.itemName }}</span>
             <span class="contact">{{ item.contact }}</span>
-            <button class="favorite-btn" @click.stop="handleToggleFavorite(item)">
+            <button
+              class="favorite-btn"
+              :class="{ active: favoriteStore.isFavorite('lostFound', item.id) }"
+              @click.stop="handleToggleFavorite(item)"
+            >
               {{ favoriteStore.isFavorite('lostFound', item.id) ? '已收藏' : '收藏' }}
             </button>
           </template>
         </ItemCard>
       </div>
     </div>
-
-    <EmptyState
-      v-if="filteredItems.length === 0"
-      :text="tab === 'lost' ? '暂无失物信息' : '暂无招领信息'"
-    />
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
+import ErrorState from '../components/ErrorState.vue'
+import LoadingState from '../components/LoadingState.vue'
+import SearchBar from '../components/SearchBar.vue'
 import { getLostFounds, type LostFoundItem } from '../api/lostFound'
 import { createFavorite, deleteFavorite, getFavorites } from '../api/favorite'
 import { useFavoriteStore } from '../stores/favorite'
@@ -54,7 +80,61 @@ import { useFavoriteStore } from '../stores/favorite'
 const router = useRouter()
 const favoriteStore = useFavoriteStore()
 const lostFounds = ref<LostFoundItem[]>([])
+const loading = ref(false)
+const error = ref(false)
 const userId = 'user_001'
+
+const tab = ref<'lost' | 'found'>('lost')
+const keyword = ref('')
+
+const filteredItems = computed(() => {
+  const value = keyword.value.trim()
+
+  return lostFounds.value.filter((item) => {
+    const matchTab = item.type === tab.value
+
+    if (!value) {
+      return matchTab
+    }
+
+    const matchKeyword =
+      item.title.includes(value) ||
+      item.itemName.includes(value) ||
+      item.location.includes(value) ||
+      item.description.includes(value)
+
+    return matchTab && matchKeyword
+  })
+})
+
+async function loadLostFounds() {
+  loading.value = true
+  error.value = false
+
+  try {
+    const res = await getLostFounds()
+    lostFounds.value = res.data
+
+    try {
+      const favRes = await getFavorites({ itemType: 'lostFound', userId })
+      for (const fav of favRes.data) {
+        const lf = lostFounds.value.find((x) => String(x.id) === String(fav.itemId))
+        if (lf && !favoriteStore.isFavorite('lostFound', lf.id)) {
+          favoriteStore.addFavorite({
+            id: lf.id, type: 'lostFound',
+            title: lf.title, description: lf.description, location: lf.location,
+            apiRecordId: fav.id,
+          })
+        }
+      }
+    } catch { /* ignore */ }
+  } catch (err) {
+    console.error(err)
+    error.value = true
+  } finally {
+    loading.value = false
+  }
+}
 
 async function handleToggleFavorite(item: LostFoundItem) {
   if (favoriteStore.isFavorite('lostFound', item.id)) {
@@ -80,29 +160,9 @@ async function handleToggleFavorite(item: LostFoundItem) {
     }
   }
 }
-const tab = ref<'lost' | 'found'>('lost')
 
-const filteredItems = computed(() =>
-  lostFounds.value.filter((item) => item.type === tab.value)
-)
-
-onMounted(async () => {
-  const res = await getLostFounds()
-  lostFounds.value = res.data
-
-  try {
-    const favRes = await getFavorites({ itemType: 'lostFound', userId })
-    for (const fav of favRes.data) {
-      const lf = lostFounds.value.find((x) => String(x.id) === String(fav.itemId))
-      if (lf && !favoriteStore.isFavorite('lostFound', lf.id)) {
-        favoriteStore.addFavorite({
-          id: lf.id, type: 'lostFound',
-          title: lf.title, description: lf.description, location: lf.location,
-          apiRecordId: fav.id,
-        })
-      }
-    }
-  } catch { /* ignore */ }
+onMounted(() => {
+  loadLostFounds()
 })
 </script>
 
@@ -126,6 +186,12 @@ onMounted(async () => {
 .page-header p {
   margin: 0;
   color: #6b7280;
+}
+
+.filter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .tab-bar {
@@ -190,5 +256,10 @@ onMounted(async () => {
   cursor: pointer;
   background: #f3f4f6;
   color: #374151;
+}
+
+.favorite-btn.active {
+  background: #dbeafe;
+  color: #2563eb;
 }
 </style>

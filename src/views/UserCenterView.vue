@@ -1,6 +1,9 @@
 <template>
   <div class="page">
-    <!-- Profile -->
+    <div class="page-header">
+      <h1>个人中心</h1>
+      <p>管理你的个人资料、收藏和已发布的商品信息。</p>
+    </div>
     <div class="profile-card">
       <div class="banner" />
       <div class="profile-info">
@@ -496,6 +499,10 @@ onMounted(async () => {
 
 <style scoped>
 .page { max-width: 1040px; margin: 0 auto; }
+
+.page-header { padding: 24px; border-radius: 16px; background: #fff; margin-bottom: 24px; }
+.page-header h1 { margin: 0 0 8px; }
+.page-header p { margin: 0; color: #6b7280; }
 
 .profile-card { background: #fff; border-radius: 18px; box-shadow: 0 1px 8px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 24px; border: 1px solid #f1f5f9; }
 .banner { height: 140px; background: linear-gradient(135deg, #f97316, #ea580c); }

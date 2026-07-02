@@ -5,9 +5,31 @@
       <p>找人一起拼、一起玩、一起学。</p>
     </div>
 
-    <div class="list">
+    <SearchBar
+      v-model="keyword"
+      placeholder="搜索拼单标题、类型、地点或描述"
+    />
+
+    <LoadingState
+      v-if="loading"
+      text="正在加载拼单信息..."
+    />
+
+    <ErrorState
+      v-else-if="error"
+      message="拼单数据加载失败，请检查 Mock 服务是否正常运行。"
+      show-retry
+      @retry="loadGroupBuys"
+    />
+
+    <EmptyState
+      v-else-if="filteredGroupBuys.length === 0"
+      text="暂无符合条件的拼单信息"
+    />
+
+    <div v-else class="list">
       <div
-        v-for="item in groupBuys"
+        v-for="item in filteredGroupBuys"
         :key="item.id"
         class="list-item"
         @click="router.push(`/detail/${item.id}?type=groupBuy`)"
@@ -26,7 +48,11 @@
             <span :class="['status-tag', item.status === 'open' ? 'open' : 'closed']">
               {{ item.status === 'open' ? '拼单中' : '已结束' }}
             </span>
-            <button class="favorite-btn" @click.stop="handleToggleFavorite(item)">
+            <button
+              class="favorite-btn"
+              :class="{ active: favoriteStore.isFavorite('groupBuy', item.id) }"
+              @click.stop="handleToggleFavorite(item)"
+            >
               {{ favoriteStore.isFavorite('groupBuy', item.id) ? '已收藏' : '收藏' }}
             </button>
             <button
@@ -34,27 +60,25 @@
               class="join-btn"
               @click.stop="joinGroup(item)"
             >
-              🤝 加入拼单
+              加入拼单
             </button>
-            <span v-else-if="isJoined(item.id)" class="joined-label">✅ 已加入</span>
+            <span v-else-if="isJoined(item.id)" class="joined-label">已加入</span>
           </template>
         </ItemCard>
       </div>
     </div>
-
-    <EmptyState
-      v-if="groupBuys.length === 0"
-      text="暂无拼单信息"
-    />
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import ItemCard from '../components/ItemCard.vue'
 import EmptyState from '../components/EmptyState.vue'
+import ErrorState from '../components/ErrorState.vue'
+import LoadingState from '../components/LoadingState.vue'
+import SearchBar from '../components/SearchBar.vue'
 import { getGroupBuys, updateGroupBuy, type GroupBuyItem } from '../api/groupBuy'
 import { createFavorite, deleteFavorite, getFavorites } from '../api/favorite'
 import { useFavoriteStore } from '../stores/favorite'
@@ -62,7 +86,57 @@ import { useFavoriteStore } from '../stores/favorite'
 const router = useRouter()
 const favoriteStore = useFavoriteStore()
 const groupBuys = ref<GroupBuyItem[]>([])
+const loading = ref(false)
+const error = ref(false)
 const userId = 'user_001'
+
+const keyword = ref('')
+
+const filteredGroupBuys = computed(() => {
+  const value = keyword.value.trim()
+
+  if (!value) {
+    return groupBuys.value
+  }
+
+  return groupBuys.value.filter((item) => {
+    return (
+      item.title.includes(value) ||
+      item.type.includes(value) ||
+      item.location.includes(value) ||
+      item.description.includes(value)
+    )
+  })
+})
+
+async function loadGroupBuys() {
+  loading.value = true
+  error.value = false
+
+  try {
+    const res = await getGroupBuys()
+    groupBuys.value = res.data
+
+    try {
+      const favRes = await getFavorites({ itemType: 'groupBuy', userId })
+      for (const fav of favRes.data) {
+        const gb = groupBuys.value.find((x) => String(x.id) === String(fav.itemId))
+        if (gb && !favoriteStore.isFavorite('groupBuy', gb.id)) {
+          favoriteStore.addFavorite({
+            id: gb.id, type: 'groupBuy',
+            title: gb.title, description: gb.description, location: gb.location,
+            apiRecordId: fav.id,
+          })
+        }
+      }
+    } catch { /* ignore */ }
+  } catch (err) {
+    console.error(err)
+    error.value = true
+  } finally {
+    loading.value = false
+  }
+}
 
 async function handleToggleFavorite(item: GroupBuyItem) {
   if (favoriteStore.isFavorite('groupBuy', item.id)) {
@@ -88,6 +162,7 @@ async function handleToggleFavorite(item: GroupBuyItem) {
     }
   }
 }
+
 const joinedIds = ref<(number | string)[]>(loadJoinedIds())
 
 function loadJoinedIds(): (number | string)[] {
@@ -106,33 +181,18 @@ function isJoined(id: number | string) {
   return joinedIds.value.includes(id)
 }
 
-onMounted(async () => {
-  const res = await getGroupBuys()
-  groupBuys.value = res.data
-
-  try {
-    const favRes = await getFavorites({ itemType: 'groupBuy', userId })
-    for (const fav of favRes.data) {
-      const gb = groupBuys.value.find((x) => String(x.id) === String(fav.itemId))
-      if (gb && !favoriteStore.isFavorite('groupBuy', gb.id)) {
-        favoriteStore.addFavorite({
-          id: gb.id, type: 'groupBuy',
-          title: gb.title, description: gb.description, location: gb.location,
-          apiRecordId: fav.id,
-        })
-      }
-    }
-  } catch { /* ignore */ }
-})
-
 async function joinGroup(item: GroupBuyItem) {
   const newCount = item.currentCount + 1
   await updateGroupBuy(item.id, { currentCount: newCount })
   item.currentCount = newCount
   joinedIds.value.push(item.id)
   saveJoinedIds()
-  ElMessage.success('🎉 你已成功加入拼单！')
+  ElMessage.success('你已成功加入拼单！')
 }
+
+onMounted(() => {
+  loadGroupBuys()
+})
 </script>
 
 <style scoped>
@@ -158,5 +218,9 @@ async function joinGroup(item: GroupBuyItem) {
   cursor: pointer;
   background: #f3f4f6;
   color: #374151;
+}
+.favorite-btn.active {
+  background: #dbeafe;
+  color: #2563eb;
 }
 </style>
